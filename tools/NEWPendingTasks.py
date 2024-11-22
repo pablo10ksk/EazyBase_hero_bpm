@@ -303,7 +303,7 @@ class NEWPendingTasks(XyzTool):
                 args=(task_id, name),
                 use_container_width=True,
             )
-            st.json(metadata)
+            # st.json(metadata)
 
     def _view_task_callback(self, task_id: str, name: str) -> None:
         from Actions import ask_shallow_question
