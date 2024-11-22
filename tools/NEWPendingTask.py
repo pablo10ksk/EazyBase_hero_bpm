@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Optional
 from uuid import uuid4
 
 import requests
@@ -62,19 +64,43 @@ class NEWPendingTask(XyzTool):
         with st.expander("Metadatos", icon="📋"):
             grid(metadata)
 
+        proc = metadata["proc"]
         with st.expander("Propiedades del concepto", icon="🏷️"):
-            self._render_concept(concept)
+            self._render_concept(concept, proc)
 
-    def _render_concept(self, concept: dict) -> None:
+    def _render_concept(self, concept: dict, proc: str) -> None:
         # Get the first 5 keys of the concept
-        keys = list(concept.keys())[:6]
+        keys = list(concept.keys())
 
-        # Render only the first 5 keys
-        concept = {key: concept[key] for key in keys}
-        st.warning(
-            "**ATENCIÓN**. Se están mostrando solo las primeras 6 propiedades del concepto."
-        )
-        grid(concept)
+        # # Render only the first 5 keys
+        # concept = {key: concept[key] for key in keys}
+        # grid(concept)
+
+        hardcoded = self._get_hardcoded_concept_view(proc)
+        if hardcoded:
+            self._render_concept_properties(concept, hardcoded)
+        else:
+            st.caption("No se ha encontrado una vista predefinida para este concepto.")
+            grid(concept)
+
+    def _render_concept_properties(
+        self, concept: dict, hardcoded: list[tuple[str, str]]
+    ) -> None:
+        # Create pairs of items from the hardcoded list
+        for i in range(0, len(hardcoded), 2):
+            cols = st.columns(2)  # Create two columns for each row
+            for col, (name, key) in zip(cols, hardcoded[i : i + 2]):
+                with col:
+                    st.caption(name)
+                    value = concept.get(key, "")
+                    # Check if the key ends with _DT to parse it as a date
+                    if key.endswith("_DT") and value:
+                        try:
+                            parsed_date = datetime.strptime(value[:8], "%Y%m%d").date()
+                            value = parsed_date.strftime("%d/%m/%Y")
+                        except ValueError:
+                            value = "Invalid date"
+                    st.text(value)
 
     def _render_historial(self, historial: list) -> None:
         """[
@@ -259,3 +285,32 @@ class NEWPendingTask(XyzTool):
         headers = {"Content-Type": "application/json"}
         res = requests.get(url, headers=headers, json=payload)
         return res.json()
+
+    def _get_hardcoded_concept_view(
+        self, concept_name: str
+    ) -> Optional[list[tuple[str, str]]]:
+        d = {
+            "Bpm de Proyecto": [
+                ("Cliente", "CLIENTE_DS"),
+                ("Institución", "INSTITUCION_DS"),
+                ("Oportunidad", "OPORTUNIDAD_DS"),
+                ("Código del Proyecto", "CODIGOPEDIDO_CD"),
+                ("Tipo de Proyecto", "TIPOPROYECTO_DS"),
+                ("Administrador", "ADMINISTRADOR_DS"),
+                ("Estado", "IBPME_SITUACION_PROC_DS"),
+                ("Importe Previsto (€)", "IMPORTEPREVISTO_NM"),
+                ("Importe Total (€)", "IMPORTE_NM"),
+                ("Descripción breve", "PEDIDO_DS"),
+            ],
+            "Proceso de Oportunidades": [
+                ("Nombre", "OPORTUNIDAD_DS"),
+                ("Código", "DEAL_CD"),
+                ("Institución", "INSTITUCION_DS"),
+                ("Cliente", "CLIENTE_DS"),
+                ("Importe estimado", "IMPORTEESTIMADO_NM"),
+                ("Descripción breve", "RESUMEN_DS"),
+                ("Estado", "ESTADO_DS"),
+                ("Fecha de alta", "ALTA_DT"),
+            ],
+        }
+        return d.get(concept_name)
