@@ -4,7 +4,7 @@ from Message import Message
 
 
 class Historial:
-    HISTORIAL_CUTOFF = 10
+    HISTORIAL_CUTOFF = 20
 
     def __init__(self):
         self._messages: list[Message] = []
