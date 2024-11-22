@@ -49,7 +49,12 @@ class NEWQueryPendingTasks(XyzTool):
                 "enable_cache": False,
             },  # type:ignore
         )
-        answer = df.chat(prompt)
+
+        try:
+            answer = df.chat(prompt)
+        except:
+            answer = "No se ha podido responder a la pregunta. Por favor, intenta formularla de otra manera."
+
         isString = isinstance(answer, str)
         return {
             "answer": answer,
