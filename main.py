@@ -11,11 +11,13 @@ from ui.styles import styles
 
 dotenv.load_dotenv()
 
-st.set_page_config(page_title=chatbot.title_name)
+st.set_page_config(
+    page_title=chatbot.title_name,
+    layout="wide",
+)
 styles()
 
 header()
-
 
 if "client" not in st.session_state:
     st.session_state.login = Login()
@@ -32,7 +34,7 @@ from Actions import ask_question
 ui_questions = st.container()
 st.session_state.ui_questions = ui_questions
 
-autocomplete()
+# autocomplete()
 
 if prompt := st.chat_input("Envía un mensaje...", key="chat_input"):
     ask_question(prompt)
