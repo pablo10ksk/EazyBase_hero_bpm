@@ -46,6 +46,7 @@ class NEWQueryPendingTasks(XyzTool):
                 "llm": llm,
                 "open_charts": False,
                 "save_logs": False,
+                "enable_cache": False,
             },  # type:ignore
         )
         answer = df.chat(prompt)
