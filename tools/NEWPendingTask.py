@@ -6,6 +6,7 @@ from pandas import DataFrame
 from pydantic import BaseModel
 
 from Api import get_endpoint
+from personSelector import autocomplete
 from tools.XyzTool import XyzTool
 from ui.grid import grid
 
@@ -155,8 +156,8 @@ class NEWPendingTask(XyzTool):
                 description = decision["optionComments"].strip()
                 id = decision["optionCd"]
 
-                # reasignable = decision["reassignFl"] == 1
-                # transferable = decision["transferFl"] == 1
+                reasignable = decision["reassignFl"] == 1
+                transferable = decision["transferFl"] == 1
 
                 # TODO: call the MakeTaskDecisionTool
                 st.button(
@@ -173,6 +174,12 @@ class NEWPendingTask(XyzTool):
                 )
                 if description:
                     st.caption(f"_{description.strip()}_")
+
+                if reasignable or transferable:
+                    autocomplete(
+                        key=f"{self.message_id}@{str(uuid4())}@{id}@autocomplete",
+                        label="Transferir o reasignar a...",
+                    )
 
     def _get_task_options(self, task_id: str) -> dict:
         url = get_endpoint("GetTaskOptionsAdvance")

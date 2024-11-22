@@ -4,6 +4,7 @@ import streamlit as st
 from Chatbot import chatbot
 from LlmProxy import LlmProxy
 from Login import Login
+from personSelector import autocomplete
 from ui.header import header
 from ui.sidebar import sidebar
 from ui.styles import styles
@@ -14,6 +15,7 @@ st.set_page_config(page_title=chatbot.title_name)
 styles()
 
 header()
+
 
 if "client" not in st.session_state:
     st.session_state.login = Login()
@@ -29,6 +31,8 @@ from Actions import ask_question
 
 ui_questions = st.container()
 st.session_state.ui_questions = ui_questions
+
+autocomplete()
 
 if prompt := st.chat_input("Envía un mensaje...", key="chat_input"):
     ask_question(prompt)
