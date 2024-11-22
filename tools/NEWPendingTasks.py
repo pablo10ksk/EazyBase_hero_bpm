@@ -14,7 +14,7 @@ from tools.XyzTool import XyzTool
 
 class NEWPendingTasksInput(BaseModel):
     aggregated: bool = False
-    minimimum_date: date | None = date.today() - timedelta(days=30)
+    minimum_date: date | None = date.today() - timedelta(days=30)
     maximum_date: date | None = None
     keywords: list[str] = []
 
@@ -44,7 +44,7 @@ class NEWPendingTasks(XyzTool):
 
     def run(self, prompt: str) -> dict:
         is_aggregated = self.input.aggregated
-        min_d = self.input.minimimum_date
+        min_d = self.input.minimum_date
         max_d = self.input.maximum_date
         keywords = self.input.keywords
         tasks = (
