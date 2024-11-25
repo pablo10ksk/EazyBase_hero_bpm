@@ -34,7 +34,5 @@ from Actions import ask_question
 ui_questions = st.container()
 st.session_state.ui_questions = ui_questions
 
-# autocomplete()
-
 if prompt := st.chat_input("Envía un mensaje...", key="chat_input"):
     ask_question(prompt)
