@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from Api import get_endpoint
 from personSelector import autocomplete
+from tools.tasks.Task import Task
 from tools.XyzTool import XyzTool
 from ui.grid import grid
 
@@ -76,7 +77,7 @@ class NEWPendingTask(XyzTool):
         # concept = {key: concept[key] for key in keys}
         # grid(concept)
 
-        hardcoded = self._get_hardcoded_concept_view(proc)
+        hardcoded = Task.get_view_from_concept(proc)
         if hardcoded:
             self._render_concept_properties(concept, hardcoded)
         else:
@@ -285,32 +286,3 @@ class NEWPendingTask(XyzTool):
         headers = {"Content-Type": "application/json"}
         res = requests.get(url, headers=headers, json=payload)
         return res.json()
-
-    def _get_hardcoded_concept_view(
-        self, concept_name: str
-    ) -> Optional[list[tuple[str, str]]]:
-        d = {
-            "Bpm de Proyecto": [
-                ("Cliente", "CLIENTE_DS"),
-                ("Institución", "INSTITUCION_DS"),
-                ("Oportunidad", "OPORTUNIDAD_DS"),
-                ("Código del Proyecto", "CODIGOPEDIDO_CD"),
-                ("Tipo de Proyecto", "TIPOPROYECTO_DS"),
-                ("Administrador", "ADMINISTRADOR_DS"),
-                ("Estado", "IBPME_SITUACION_PROC_DS"),
-                ("Importe Previsto (€)", "IMPORTEPREVISTO_NM"),
-                ("Importe Total (€)", "IMPORTE_NM"),
-                ("Descripción breve", "PEDIDO_DS"),
-            ],
-            "Proceso de Oportunidades": [
-                ("Nombre", "OPORTUNIDAD_DS"),
-                ("Código", "DEAL_CD"),
-                ("Institución", "INSTITUCION_DS"),
-                ("Cliente", "CLIENTE_DS"),
-                ("Importe estimado", "IMPORTEESTIMADO_NM"),
-                ("Descripción breve", "RESUMEN_DS"),
-                ("Estado", "ESTADO_DS"),
-                ("Fecha de alta", "ALTA_DT"),
-            ],
-        }
-        return d.get(concept_name)

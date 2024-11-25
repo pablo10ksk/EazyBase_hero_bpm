@@ -1,6 +1,8 @@
 import os
 from collections import OrderedDict
-from datetime import date, datetime, timedelta
+from copy import deepcopy
+from datetime import date, datetime
+from typing import Any
 from uuid import uuid4
 
 import requests
@@ -12,11 +14,46 @@ from tools.ExampleQuestion import ExampleQuestion
 from tools.XyzTool import XyzTool
 
 
+class Filters(BaseModel):
+    # CLIENTE_DS: str | None = None
+    # INSTITUCION_DS: str | None = None
+    # OPORTUNIDAD_DS: str | None = None
+    # CODIGOPEDIDO_CD: str | None = None
+    # TIPOPROYECTO_DS: str | None = None
+    # ADMINISTRADOR_DS: str | None = None
+    # IBPME_SITUACION_PROC_DS: str | None = None
+    # IMPORTEPREVISTO_NM_min: int | None = None
+    # IMPORTEPREVISTO_NM_max: int | None = None
+    # IMPORTE_NM_min: int | None = None
+    # IMPORTE_NM_max: int | None = None
+    # PEDIDO_DS: str | None = None
+    # DEAL_CD: str | None = None
+    # IMPORTEESTIMADO_NM_min: int | None = None
+    # IMPORTEESTIMADO_NM_max: int | None = None
+    # RESUMEN_DS: str | None = None
+    # ESTADO_DS: str | None = None
+    # TAREA_DT_min: date | None = None
+    # TAREA_DT_max: date | None = None
+
+    # inicio_DT_min: date | None = None
+    # inicio_DT_max: date | None = None
+    proc_CS: str | None = None
+    version_CD: str | None = None
+    currTask_DS: str | None = None
+    currPhase_DS: str | None = None
+
+    TAREA_CD: str | None = None
+    TAREA_DS: str | None = None
+    ETAPA_CD: str | None = None
+    ETAPA_DS: str | None = None
+    PROCESO_DS: str | None = None
+    TAREA_DT_min: date | None = None
+    TAREA_DT_max: date | None = None
+
+
 class NEWPendingTasksInput(BaseModel):
     aggregated: bool = False
-    minimum_date: date | None = date.today() - timedelta(days=30)
-    maximum_date: date | None = None
-    keywords: list[str] = []
+    filters: Filters
 
 
 class NEWPendingTasks(XyzTool):
@@ -26,7 +63,8 @@ class NEWPendingTasks(XyzTool):
         today = date.today()
         super().__init__(
             name="pending_tasks",
-            description=f"Gets *ALL* the pending tasks for the current user. If 'aggregated' is set to true, tasks will be presented grouped by phase. You can specify in which range of dates you want them with minimum_date..maximum_date. You can leave either of them empty. By default, the minimum date is 30 days ago. As a reference, today is {today.isoformat()}. If the user asks about a specific task name or type (e.g., holidays, lanzamiento, autorizar pago...), put them into the keywords field. Do not translate the keywords.",
+            description=f"Gets the pending tasks for the current user. If 'aggregated' is set to true, tasks will be presented grouped by phase. You have a series of filters which you may fill in or not. As a reference, today is {today.isoformat()}. When filling in the json, do put the keywords as is (do not translate them).",
+            # If the user asks about a specific task name or type (e.g., holidays, lanzamiento, autorizar pago...), put them into the keywords field.
             human_name="Listar tareas pendientes",
             human_description="Muestra una lista de todas las tareas pendientes. Puedes pedir que se muestren agrupadas por fase, o solo las tareas pendientes en un rango de fechas.",
             example_questions=[
@@ -44,28 +82,16 @@ class NEWPendingTasks(XyzTool):
 
     def run(self, prompt: str) -> dict:
         is_aggregated = self.input.aggregated
-        min_d = self.input.minimum_date
-        max_d = self.input.maximum_date
-        keywords = self.input.keywords
+        filters = self.input.filters
         tasks = (
             self._get_all_tasks_phased()
             if is_aggregated
-            else self._get_all_tasks(min_d, max_d, keywords)
+            else self._filter_tasks(self._get_all_tasks(), filters)
         )
         return {
             "phased": is_aggregated,
             "tasks": tasks,
-            "min_date": min_d,
-            "max_date": max_d,
-            "keywords": keywords,
-            "associatedMetadata": (
-                {
-                    task["EJECUCION_ID"]: self._get_metadata_from_task(task)
-                    for task in tasks
-                }
-                if not is_aggregated
-                else {}
-            ),
+            "filters": filters,
         }
 
     def text(self, data: dict) -> str:
@@ -74,28 +100,21 @@ class NEWPendingTasks(XyzTool):
     def render(self, text: str, payload: dict) -> None:
         is_aggregated = payload["phased"]
         tasks = payload["tasks"]
-        min_d = payload["min_date"]
-        max_d = payload["max_date"]
-        keywords = payload["keywords"]
-        associated_metadata = payload["associatedMetadata"]
+        filters = payload["filters"]
         if is_aggregated:
             self._render_aggregated_tasks(tasks)
         else:
-            self._render_tasks(tasks, min_d, max_d, keywords, associated_metadata)
+            self._render_tasks(tasks, filters)
 
     def _render_tasks(
         self,
         tasks: list,
-        min_d: date | None,
-        max_d: date | None,
-        keywords: list[str],
-        associated_metadata: dict,
+        filters: Filters,
     ) -> None:
         n = len(tasks)
         number_tasks_explanation = self._get_number_tasks_explanation(n)
-        date_range_explanation = self._get_date_range_explanation(min_d, max_d)
-        keywords_explanation = self._get_keywords_explanation(keywords)
-        explanation = f"{number_tasks_explanation} {date_range_explanation} {keywords_explanation}"
+        filters_explanation = self._get_filters_explanation(filters)
+        explanation = f"{number_tasks_explanation} {filters_explanation}"
         st.markdown(f"{explanation.strip()}.")
 
         if n > 0:
@@ -124,19 +143,8 @@ class NEWPendingTasks(XyzTool):
                         id = task["EJECUCION_ID"]
                         name = task["TAREA_DS"]
                         link = task["EXTERNAL_LINK_DS"]
-                        metadata = associated_metadata.get(id)
-                        assert metadata is not None, f"Metadata not found for task {id}"
                         with cols[col_idx]:
-                            self._display_task(id, name, link, metadata)
-
-    def _get_keywords_explanation(self, keywords: list[str]) -> str:
-        if keywords:
-            k_str = self._join_spanish([f"'{k}'" for k in keywords])
-            if len(keywords) == 1:
-                return f"que contengan el término {k_str}"
-            else:
-                return f" que contengan los términos {k_str}"
-        return ""
+                            self._display_task(id, name, link)
 
     def _join_spanish(self, l: list[str]) -> str:
         """Une una lista con comas excepto el último que va con un 'y'"""
@@ -149,17 +157,45 @@ class NEWPendingTasks(XyzTool):
         else:
             return ", ".join(l[:-1]) + " y " + l[-1]
 
-    def _get_date_range_explanation(
-        self, min_d: date | None, max_d: date | None
-    ) -> str:
-        if min_d is None and max_d is None:
+    def _get_filters_explanation(self, filters: Filters) -> str:
+        f = filters.model_dump()
+        alguno_relleno = any(x is not None for x in f.values())
+
+        if not alguno_relleno:
             return ""
-        elif min_d is None and max_d is not None:
-            return f"hasta el {max_d.isoformat()}"
-        elif max_d is None and min_d is not None:
-            return f"desde el {min_d.isoformat()}"
-        assert min_d is not None and max_d is not None
-        return f"entre el {min_d.isoformat()} y el {max_d.isoformat()}"
+
+        res = " con los siguientes filtros: "
+        textos = []
+        for key, value in f.items():
+            if value is None:
+                continue
+            if key.endswith("_min") or key.endswith("_max"):
+                is_min = key.endswith("_min")
+                is_max = key.endswith("_max")
+                key = key[:-4]
+            else:
+                is_min = False
+                is_max = False
+
+            if key.endswith("_NM"):
+                if is_min:
+                    textos.append(f"{key} mayor o igual a {value}")
+                elif is_max:
+                    textos.append(f"{key} menor o igual a {value}")
+                else:
+                    textos.append(f"{key} igual a {value}")
+            elif key.endswith("_DT"):
+                if is_min:
+                    textos.append(f"{key} mayor o igual a {value}")
+                elif is_max:
+                    textos.append(f"{key} menor o igual a {value}")
+                else:
+                    textos.append(f"{key} igual a {value}")
+            else:
+                textos.append(f"{key} igualTEXTO a '{value}'")
+
+        res += self._join_spanish(textos)
+        return res
 
     def _group_tasks_by_date(self, tasks: list) -> dict[str, list]:
         # Sort tasks by descending date
@@ -213,21 +249,8 @@ class NEWPendingTasks(XyzTool):
                     table += f"\n{etapa_name} | {nombre_l} | {today_l} | {total_l}"
             st.markdown(table)
 
-    def _get_all_tasks(
-        self, min_d: date | None, max_d: date | None, keywords: list[str]
-    ) -> list:
-        url = get_endpoint("GetPendingTasks")
-        payload = {
-            "token": self.global_payload.token,
-            "userId": self.global_payload.userId,
-            "userTasksFl": "true",
-            "groupsTasksFl": "true",
-            "pendingTaskId": "",
-            "locatorDs": "",
-        }
-        headers = {"Content-Type": "application/json"}
-        tasks = requests.get(url, headers=headers, json=payload).json()
-        matching_tasks = []
+    def _filter_tasks(self, tasks_: list, filters: Filters) -> list:
+        """matching_tasks = []
         for task in tasks:
             # Parse the task date
             task["DATE"] = datetime.fromisoformat(task["TAREA_DT"])
@@ -266,7 +289,74 @@ class NEWPendingTasks(XyzTool):
                 continue
 
             matching_tasks.append(task)
-        return matching_tasks
+        """
+
+        # The strategy is the following:
+        # deep copy the task lists.
+        # Now, iterate throught all the fields of the task. If the field ends with _DT, replace the value of the field with fromisoformat.
+
+        tasks = deepcopy(tasks_)
+        for task in tasks:
+            for key, asked_value in task.items():
+                if key.endswith("_DT"):
+                    if asked_value is not None and asked_value != "":
+                        task[key] = datetime.fromisoformat(asked_value)
+
+        # Expand the fields of the metadata of the task to the task itself
+        for task in tasks:
+            task = {**task, **task["metadata"]}
+            del task["metadata"]
+
+        filters_items = filters.model_dump()
+        res = filter(lambda task: self._is_good_task(task, filters_items), tasks)
+        return list(res)
+
+    def _is_good_task(self, task: dict[str, Any], fields: dict[str, Any]) -> bool:
+        # For each field in Filters, we check if the field is None. If it is not, we check if the field is in the task, removing _min or _max if necessary.
+        # Depending on the type of the field, we check if the value is in the range or if it is equal to the value.
+        # If the field is empty, ignore it
+        for key, value in fields.items():
+            if value is None:
+                continue
+            if key.endswith("_min") or key.endswith("_max"):
+                is_min = key.endswith("_min")
+                is_max = key.endswith("_max")
+                key = key[:-4]
+            else:
+                is_min = False
+                is_max = False
+            if key not in task:
+                return False
+            task_value = task[key]
+            if is_min:
+                value = datetime.combine(value, datetime.min.time())
+                if task_value < value:
+                    return False
+            elif is_max:
+                value = datetime.combine(value, datetime.max.time())
+                if task_value > value:
+                    return False
+            else:
+                if task_value != value:
+                    return False
+        return True
+
+    def _get_all_tasks(self) -> list:
+        url = get_endpoint("GetPendingTasks")
+        payload = {
+            "token": self.global_payload.token,
+            "userId": self.global_payload.userId,
+            "userTasksFl": "true",
+            "groupsTasksFl": "true",
+            "pendingTaskId": "",
+            "locatorDs": "",
+        }
+        headers = {"Content-Type": "application/json"}
+        tasks = requests.get(url, headers=headers, json=payload).json()
+        for task in tasks:
+            task["DATE"] = datetime.fromisoformat(task["TAREA_DT"])
+            task["metadata"] = self._get_metadata_from_task(task)
+        return tasks
 
     def _get_all_tasks_phased(self) -> list:
         url = get_endpoint("GetPendingTasksPhased")
@@ -286,7 +376,7 @@ class NEWPendingTasks(XyzTool):
             case _:
                 return f"Tienes **{n}** tareas pendientes"
 
-    def _display_task(self, task_id: str, name: str, link: str, metadata: dict) -> None:
+    def _display_task(self, task_id: str, name: str, link: str) -> None:
         external_link_url = os.getenv("EXTERNAL_LINK_URL")
         assert external_link_url is not None, "EXTERNAL_LINK_URL is not set"
         full_link = external_link_url + link
@@ -303,7 +393,6 @@ class NEWPendingTasks(XyzTool):
                 args=(task_id, name),
                 use_container_width=True,
             )
-            # st.json(metadata)
 
     def _view_task_callback(self, task_id: str, name: str) -> None:
         from Actions import ask_shallow_question
@@ -323,6 +412,15 @@ class NEWPendingTasks(XyzTool):
             "cptoBaseCd": conceptobase_cd,
             "cptoBaseId": conceptobase_id,
         }
+
         headers = {"Content-Type": "application/json"}
-        res = requests.get(url, headers=headers, json=payload)
-        return res.json()[0]
+        res_raw = requests.get(url, headers=headers, json=payload)
+        res_raw = res_raw.json()[0]
+
+        return {
+            "inicio_DT": res_raw["inicioDt"],
+            "proc_CS": res_raw["proc"],
+            "version_CD": res_raw["versionCd"],
+            "currTask_DS": res_raw["currTask"],
+            "currPhase_DS": res_raw["currPhase"],
+        }
