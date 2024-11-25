@@ -25,9 +25,15 @@ class SummaryTool(SimpleXyzTool):
 
     def text(self, data: dict) -> str:
         name = chatbot.fancy_name
-        description = chatbot.description
-        res = f"Welcome to **{name}**: {description} Here, you can:\n\n"
-        res = f"Te damos la bienvenida a **{name}**: {description} Aquí, puedes:\n\n"
-        for idx, tool in enumerate(data["tools"]):
-            res += f"{idx+1}. **{tool.human_name}**: {tool.human_description}\n"
+        description = chatbot.description.strip()
+        tools_description = self._get_tools_description()
+
+        return f"""Te damos la bienvenida a **{name}**: _{description}_ Aquí, puedes:\n\n{tools_description}"""
+
+    def _get_tools_description(self) -> str:
+        res = ""
+        for idx, tool in enumerate(all_tools):
+            name = tool.human_name
+            description = tool.human_description
+            res += f"{idx+1}. **{name}**: {description}\n"
         return res

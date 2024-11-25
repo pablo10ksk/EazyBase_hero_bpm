@@ -6,7 +6,7 @@ from tools.tools import all_tools
 
 
 def header():
-    col1, col2 = st.columns([3, 4])
+    col1, col2 = st.columns([6, 5])
     with col1:
         st.title(chatbot.fancy_name)
         st.caption(chatbot.description)
