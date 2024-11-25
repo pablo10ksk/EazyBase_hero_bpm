@@ -88,6 +88,13 @@ class LlmProxy:
         return response.choices[0].message.content
 
     def route_prompt(self, prompt: str) -> Tuple[Optional[XyzTool], dict]:
+        tasks_description = ""
+        for tool in all_tools:
+            name = tool.name
+            description = tool.description.strip()
+            schema = tool.get_input_schema_description()
+            tasks_description += f"- *{name}*: {description} | {schema}\n"
+
         content = f"""
         The user has asked the following:
         -----------------------
@@ -95,27 +102,32 @@ class LlmProxy:
         -----------------------
 
         You, as an assistant, have access to these tools:
-        """
 
-        for tool in all_tools:
-            name = tool.name
-            description = tool.description.strip()
-            schema = tool.get_input_schema_description()
-            content += f"- *{name}*: {description} | {schema}\n"
+        {tasks_description}
+        
+        The user will likely ask in Spanish, but you must use the tools with their names as presented above.\n"
+        
+        You must answer using json:
+        - If the goal of a tool matches with the user intent, return {{'tool': '<tool_name>'}} plus the required fields. All the fields are required except those marked with None.
+        - If the user makes a general question (not related to the chatbot) or wants you to explain what you have talked so far, return {{}}. 
 
-        content += "\nThe user will likely ask in Spanish, but you must use the tools with their names as presented above.\n"
-        content += """\n\n You must answer using json:
-        - If the request of the user matches _perfectly_ any of the tool requirements, return {'tool': '<tool_name>'} plus the required fields. Those marked with None, leave them out.
-        - Otherwise, return {}.
-
-        Do NOT wrap within ```json tags. GO!
+        Do NOT wrap within ```json tags. Go!
         """
 
         current_message = {"role": "assistant", "content": content}
         response = self.client.chat.completions.create(
             temperature=0,
             model=self.LIGHT_MODEL,
-            messages=[current_message],  # type: ignore
+            messages=[
+                *[
+                    {
+                        "role": m.role,
+                        "content": m.text,
+                    }
+                    for m in self.historial.get_last_messages()
+                ],
+                current_message,
+            ],  # type: ignore
             # response_format={"type": "json_object"},
         )
         response_text = response.choices[0].message.content
