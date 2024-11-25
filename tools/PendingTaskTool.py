@@ -14,12 +14,12 @@ from tools.XyzTool import XyzTool
 from ui.grid import grid
 
 
-class NEWPendingTaskInput(BaseModel):
+class PendingTaskInput(BaseModel):
     task_id: str
 
 
-class NEWPendingTask(XyzTool):
-    input: NEWPendingTaskInput
+class PendingTaskTool(XyzTool):
+    input: PendingTaskInput
 
     def __init__(self):
         super().__init__(
@@ -27,7 +27,7 @@ class NEWPendingTask(XyzTool):
             description="Finds and displays a pending task by its id (an UUID).",
             human_name="Mostrar tarea pendiente",
             human_description="Muestra una tarea y permite tomar una decisión sobre ella.",
-            schema=NEWPendingTaskInput,
+            schema=PendingTaskInput,
         )
 
     def run(self, prompt: str) -> dict:

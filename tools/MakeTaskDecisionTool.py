@@ -11,7 +11,7 @@ class MakeTaskDecisionInput(BaseModel):
     # comment: str | None
 
 
-class NEWMakeTaskDecisionTool(SimpleXyzTool):
+class MakeTaskDecisionTool(SimpleXyzTool):
     input: MakeTaskDecisionInput
 
     def __init__(self):

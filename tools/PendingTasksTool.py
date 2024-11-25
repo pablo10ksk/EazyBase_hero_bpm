@@ -51,13 +51,13 @@ class Filters(BaseModel):
     TAREA_DT_max: date | None = None
 
 
-class NEWPendingTasksInput(BaseModel):
+class PendingTasksInput(BaseModel):
     aggregated: bool = False
     filters: Filters
 
 
-class NEWPendingTasks(XyzTool):
-    input: NEWPendingTasksInput
+class PendingTasksTool(XyzTool):
+    input: PendingTasksInput
 
     def __init__(self):
         today = date.today()
@@ -77,7 +77,7 @@ class NEWPendingTasks(XyzTool):
                     "Tareas agregadas",
                 ),
             ],
-            schema=NEWPendingTasksInput,
+            schema=PendingTasksInput,
         )
 
     def run(self, prompt: str) -> dict:

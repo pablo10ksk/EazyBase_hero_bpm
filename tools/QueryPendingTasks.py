@@ -9,7 +9,7 @@ from tools.ExampleQuestion import ExampleQuestion
 from tools.XyzTool import XyzTool
 
 
-class NEWQueryPendingTasks(XyzTool):
+class QueryPendingTasksTool(XyzTool):
     def __init__(self):
         super().__init__(
             name="query_pending_tasks",
