@@ -19,8 +19,8 @@ class LlmProxy:
     historial: Historial
     login: Login
 
-    LIGHT_MODEL = "gpt-4"
-    MODEL = "gpt-4"
+    LIGHT_MODEL = "gpt-4o-mini"
+    MODEL = "gpt-4o-mini"
 
     def __init__(self, login: Login):
         self.client = OpenAI()
@@ -84,6 +84,19 @@ class LlmProxy:
                 }
                 for m in self.historial.get_last_messages()
             ],  # type: ignore
+        )
+        return response.choices[0].message.content
+
+    def regular_call_with_prompt_without_history(self, prompt: str) -> Optional[str]:
+        response = self.client.chat.completions.create(
+            temperature=0,
+            model=self.MODEL,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
         )
         return response.choices[0].message.content
 

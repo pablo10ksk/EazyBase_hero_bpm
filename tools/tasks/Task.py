@@ -1,7 +1,7 @@
-from datetime import date, datetime, time, timedelta
+from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, create_model
 
 
 class Task:
@@ -29,7 +29,7 @@ class Task:
                 ("Importe estimado", "IMPORTEESTIMADO_NM"),
                 ("Descripción breve", "RESUMEN_DS"),
                 ("Estado", "ESTADO_DS"),
-                ("Fecha de alta", "ALTA_DT"),
+                # ("Fecha de alta", "ALTA_DT"),
             ],
         }
 
@@ -63,6 +63,16 @@ class Task:
 
     @staticmethod
     def get_view_from_concept(
-        concept_name: str,
-    ) -> Optional[list[tuple[str, str]]]:
-        return Task.get_views().get(concept_name)
+        concept_name: str | None,
+    ) -> list[tuple[str, str]]:
+        if concept_name is not None:
+            res = Task.get_views().get(concept_name)
+            if res is None:
+                res = []
+        else:
+            res = []
+        res.append(("Fecha de creación de la tarea pendiente", "DATE"))
+        res.append(("Nombre de la tarea", "TAREA_DS"))
+        res.append(("Nombre de tarea actual", "currTask"))
+        res.append(("Nombre de fase actual", "currPhase"))
+        return res

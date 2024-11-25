@@ -9,13 +9,13 @@ from tools.ExampleQuestion import ExampleQuestion
 from tools.XyzTool import XyzTool
 
 
-class QueryPendingTasksTool(XyzTool):
+class GraphPendingTasksTool(XyzTool):
     def __init__(self):
         super().__init__(
-            name="query_pending_tasks",
-            description="Most of the times, users just want to get all the pending tasks. However, sometimes they may want to filter them (e.g., give me the pending tasks until may 2024, which are the last 20 tasks, which task has the ..., etc). For those cases, use this task. This uses PandasAI internally, so USE THIS when the user ask about data frames, strings, numbers, or graphs (histograms, plots,... !).",
-            human_name="Responder preguntas sobre tareas pendientes",
-            human_description="Permite filtrar, agregar y mostrar gráficos sobre las tareas pendientes.",
+            name="graph_pending_tasks",
+            description="Use this tool when the user wants to plot something about the pending tasks.",
+            human_name="Gráfico de tareas pendientes",
+            human_description="Permite hacer gráficos que dependen de las tareas pendientes",
             example_questions=[
                 ExampleQuestion(
                     label="Gráfico de tareas",
