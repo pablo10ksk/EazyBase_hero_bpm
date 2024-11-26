@@ -9,7 +9,6 @@ from pydantic import BaseModel
 
 from Api import get_endpoint
 from personSelector import autocomplete
-from tools.tasks.Task import Task
 from tools.XyzTool import XyzTool
 from ui.grid import grid
 
@@ -47,33 +46,41 @@ class PendingTaskTool(XyzTool):
         }
 
     def text(self, data: dict) -> str:
-        return ""
+        task = data["task"]
+        tarea_ds = task["TAREA_DS"]
+        # ejecucion_id = task["EJECUCION_ID"]
+        etapa_ds = task["ETAPA_DS"]
+        proceso_ds = task["PROCESO_DS"]
+
+        res = f"**Tarea '{tarea_ds}'**\n\n"
+        # res += f"- **ID de tarea**: {ejecucion_id}\n"
+        res += f"- **Etapa**: {etapa_ds}\n"
+        res += f"- **Proceso**: {proceso_ds}\n"
+        return res
 
     def render(self, text: str, payload: dict) -> None:
-        task = payload["task"]
         options = payload["options"]
         metadata = payload["metadata"]
         concept = payload["concept"]
         basedata = payload["basedata"]
         historial = payload["historial"]
 
-        self._render_task(task)
+        st.markdown(text)
 
         self._render_historial(historial)
+
+        with st.expander("**Concepto**", icon="🏷️", expanded=True):
+            self._render_concept(concept, basedata)
 
         with st.expander("**Toma de decisión**", icon="🔀", expanded=True):
             self._render_options(options)
 
-        with st.expander("Metadatos", icon="📋"):
+        with st.expander("**Metadatos**", icon="📋"):
             grid(metadata)
 
-        with st.expander("Propiedades del concepto", icon="🏷️"):
-            self._render_concept(concept, basedata)
-
     def _render_concept(self, concept: dict, basedata: list[tuple[str, str]]) -> None:
-        concept_view = basedata
-        if concept_view:
-            self._render_concept_properties(concept, concept_view)
+        if basedata:
+            self._render_concept_properties(concept, basedata)
         else:
             st.caption("No se ha encontrado una vista predefinida para este concepto.")
             grid(concept)
@@ -84,7 +91,7 @@ class PendingTaskTool(XyzTool):
         # Create pairs of items from the hardcoded list
         for i in range(0, len(concept_view), 2):
             cols = st.columns(2)  # Create two columns for each row
-            for col, (name, key) in zip(cols, concept_view[i : i + 2]):
+            for col, (key, name) in zip(cols, concept_view[i : i + 2]):
                 with col:
                     st.caption(name)
                     value = concept.get(key, "")
@@ -98,72 +105,17 @@ class PendingTaskTool(XyzTool):
                     st.text(value)
 
     def _render_historial(self, historial: list) -> None:
-        """[
-            {
-                "EJECUCION_TAREA_ID": "ZchLDB1u2AnrS/OsBYpPV89jP7eZ2fJSmC2oQBspIHamBA==",
-                "EJECUCION_TAREA_DT": "2024-02-28",
-                "TAREA_CD": "START",
-                "TAREA_DS": "Inicio proceso",
-                "ETAPA_CD": "INICIO",
-                "ETAPA_DS": "Inicio",
-                "COMENTARIOS_DS": "",
-                "RESPONSABLE_DS": "ugadmin ",
-                "OPCION_CD": "INITPROC",
-                "OPCION_DS": "Init process",
-                "ESTADO_CD": "EJECUTADA_OK",
-                "ESTADO_DS": "Ejecutada OK",
-                "ANTERIOR_ID": "",
-                "FIN_DT": "2024-02-28T23:22:45",
-                "TAREA_DT": "2024-02-28T23:22:45",
-                "VENCIMIENTO_DT": ""
-            },
-            {
-                "EJECUCION_TAREA_ID": "YshPV0lq3QfrF6b8VtpPUphiNL6S2KsCy3b5R04scyXyVA==",
-                "EJECUCION_TAREA_DT": "2024-02-28",
-                "TAREA_CD": "ITSEAZY",
-                "TAREA_DS": "EazyJob :)",
-                "ETAPA_CD": "CENTER",
-                "ETAPA_DS": "Tarea central",
-                "COMENTARIOS_DS": "",
-                "RESPONSABLE_DS": "ugadmin ",
-                "OPCION_CD": "",
-                "OPCION_DS": "???",
-                "ESTADO_CD": "PDTE_FIN",
-                "ESTADO_DS": "Pendiente de finalización",
-                "ANTERIOR_ID": "ZchLDB1u2AnrS/OsBYpPV89jP7eZ2fJSmC2oQBspIHamBA==",
-                "FIN_DT": "",
-                "TAREA_DT": "2024-02-28T23:22:45",
-                "VENCIMIENTO_DT": ""
-            }
-        ]"""
-
         clean_historial = [
             {
-                "Tarea": x["TAREA_DS"],
-                "Opción": x["OPCION_DS"],
-                "Estado": x["ESTADO_DS"],
-                "Fecha": x["EJECUCION_TAREA_DT"],
+                "Tarea": step["TAREA_DS"],
+                "Opción": step["OPCION_DS"],
+                "Estado": step["ESTADO_DS"],
+                "Fecha": step["EJECUCION_TAREA_DT"],
             }
-            for x in historial
+            for step in historial
         ]
         df = DataFrame(clean_historial)
         st.dataframe(df, hide_index=True, use_container_width=True)
-
-    def _render_task(self, task: dict) -> None:
-        tarea_ds = task["TAREA_DS"]
-        ejecucion_id = task["EJECUCION_ID"]
-        etapa_ds = task["ETAPA_DS"]
-        proceso_ds = task["PROCESO_DS"]
-
-        st.markdown(
-            f"""
-            **Tarea: {tarea_ds}**
-
-            - **ID de tarea**: {ejecucion_id}
-            - **Etapa**: {etapa_ds}
-            - **Proceso**: {proceso_ds}
-        """
-        )
 
     def _render_options(self, options: list) -> None:
         st.caption("Puedes tomar una decisión sobre esta tarea.")
@@ -249,10 +201,8 @@ class PendingTaskTool(XyzTool):
             res = requests.get(url, headers=headers, json=payload).json()
             res = res["retunobj_"]
             concept = res["attributes"]
-            basedata = res["basedata"]
+            basedata = list(res["basedata"].items())
 
-            # Formato: [("Fecha prevista de emisión", "PREVEMI_DT"), ...]
-            basedata = [(v, k) for k, v in basedata.items()]
             return concept, basedata
         except:
             return {}, []

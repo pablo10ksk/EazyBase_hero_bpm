@@ -10,7 +10,6 @@ from pydantic import BaseModel
 
 from Api import get_endpoint
 from tools.ExampleQuestion import ExampleQuestion
-from tools.tasks.Task import Task
 from tools.XyzTool import XyzTool
 
 
@@ -46,14 +45,41 @@ class NEWPendingTasksTool(XyzTool):
         ok = True
         all_concepts = self._get_all_concepts_set(tasks)
 
-        if concept_name is not None and concept_name in all_concepts:
-            tasks = self._filter_tasks_by_concept(tasks, concept_name)
+        # if concept_name is not None and concept_name in all_concepts:
+        #     tasks = self._filter_tasks_by_concept(tasks, concept_name)
 
+        if concept_name is not None:
+            if concept_name in all_concepts:
+                tasks = self._filter_tasks_by_concept(tasks, concept_name)
+            else:
+                tasks = []
+                ok = False
+
+        last_basedata = None
         for task in tasks:
-            task["concept"] = self._get_concept_from_task(task)
+            task["concept"], basedata = self._get_concept_from_task(task)
             task["metadata"] = self._get_metadata_from_task(task)
+            if basedata:
+                last_basedata = basedata
 
-        concept_keys = Task.get_view_from_concept(concept_name)
+        if (
+            concept_name is not None
+            and last_basedata is not None
+            and len(last_basedata) > 0
+        ):
+            concept_keys = last_basedata
+
+        else:
+            concept_keys = []
+        concept_keys.extend(
+            [
+                ("TAREA_DS", "Nombre de la tarea"),
+                ("currTask", "Nombre de tarea actual"),
+                ("currPhase", "Nombre de fase actual"),
+                ("DATE", "Fecha de alta de la tarea"),
+            ]
+        )
+        print(concept_keys)
         tasks, filter = self._filter_tasks_by_filters(
             concept_name, tasks, concept_keys, prompt
         )
@@ -77,14 +103,14 @@ class NEWPendingTasksTool(XyzTool):
         today = date.today().isoformat()
         concepts_description = ""
         for key, value in concept_keys:
-            concepts_description += f"- **{value}**: {value}\n"
+            concepts_description += f"- **{key}**: {value}\n"
         router_prompt = f"""
         We are within a tool that shows pending tasks. The user has made the following question:
         -------
         {prompt}
         -------
 
-        We already know that the user is asking for pending tasks (DO NOT add filters for 'pending' or 'active' nor anything like that!!!). Now we want to extract the filters that the user has specified. The available filters are:
+        We already know that the user is asking for pending tasks (DO NOT add filters for 'pending' or 'active' nor anything like that!!!). The user may also ask for tasks (tareas) of a certain type (BPM de Factura Recibida, BPM de <...>). Also ignore those! Now we want to extract the filters that the user has specified. The available filters are:
         ----
         {concepts_description}
         ----
@@ -103,7 +129,7 @@ class NEWPendingTasksTool(XyzTool):
                 ],
                 "IBPME_RESP_ACTUAL_DS": [{"op": "contains", "value": "Grupo"}],
                 "IBPME_RESP_ACTUAL_CD": [{"op": "eq", "value": "GRP@1@"}],
-                "MOD_DT": [
+                "DATE": [
                     {"op": "<=", "value": "2022-12-31"},
                 ],
             }
@@ -232,9 +258,13 @@ class NEWPendingTasksTool(XyzTool):
         all_concepts = data["all_concepts"]
         ok = data["ok"]
         concept_name = data["concept_name"]
+        all_concepts_bold = [f"**{concept}**" for concept in all_concepts]
+        all_concepts_bold = self._join_spanish(all_concepts_bold)
 
         if not ok:
-            return f"No hay tareas pendientes de tipo '{concept_name}'. Los tipos disponibles son: {self._join_spanish(list(all_concepts))}."
+            res = f"No hay tareas pendientes de tipo '{concept_name}.\n\n"
+            res += f"Los tipos disponibles son: {all_concepts_bold}."
+            return res
 
         tipo_parte = f" de tipo {concept_name}" if concept_name else ""
 
@@ -333,8 +363,8 @@ class NEWPendingTasksTool(XyzTool):
     def _explain_filter(self, filter: dict, concept_keys: list[tuple[str, str]]) -> str:
         def get_description_key_from_code(code: str) -> str:
             for key, value in concept_keys:
-                if value == code:
-                    return key
+                if key == code:
+                    return value
             return code
 
         res = ""
@@ -443,7 +473,7 @@ class NEWPendingTasksTool(XyzTool):
             res.add(task["PROCESO_DS"])
         return res
 
-    def _get_concept_from_task(self, task: dict) -> dict:
+    def _get_concept_from_task(self, task: dict) -> tuple[dict, list[tuple[str, str]]]:
         try:
             conceptobase_cd = task["CONCEPTOBASE_CD"]
             conceptobase_id = task["CONCEPTOBASE_ID"]
@@ -457,7 +487,11 @@ class NEWPendingTasksTool(XyzTool):
                 },
             }
             headers = {"Content-Type": "application/json"}
-            res = requests.get(url, headers=headers, json=payload)
-            return res.json()["retunobj_"]["attributes"]
+            res = requests.get(url, headers=headers, json=payload).json()
+            res = res["retunobj_"]
+            concept = res["attributes"]
+            basedata = list(res["basedata"].items())
+
+            return concept, basedata
         except:
-            return {}
+            return {}, []
