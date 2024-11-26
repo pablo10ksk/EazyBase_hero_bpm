@@ -19,7 +19,6 @@ class LlmProxy:
     historial: Historial
     login: Login
 
-    LIGHT_MODEL = "gpt-4o-mini"
     MODEL = "gpt-4o-mini"
 
     def __init__(self, login: Login):
@@ -97,6 +96,7 @@ class LlmProxy:
                     "content": prompt,
                 }
             ],
+            response_format={"type": "json_object"},
         )
         return response.choices[0].message.content
 
@@ -118,19 +118,19 @@ class LlmProxy:
 
         {tasks_description}
         
-        The user will likely ask in Spanish, but you must use the tools with their names as presented above.\n"
+        The user will likely ask in Spanish, but you must use the tools with their names as presented above.
         
         You must answer using json:
-        - If the goal of a tool matches with the user intent, return {{'tool': '<tool_name>'}} plus the required fields. All the fields are required except those marked with None.
+        - If the goal of a tool matches with the user intent, return {{"tool": "<tool_name>"}} plus the required fields. All the fields are required except those marked with None.
         - If the user makes a general question (not related to the chatbot) or wants you to explain what you have talked so far, return {{}}. 
 
-        Do NOT wrap within ```json tags. Go!
+        Return a valid json dictionary. Go!
         """
 
         current_message = {"role": "assistant", "content": content}
         response = self.client.chat.completions.create(
             temperature=0,
-            model=self.LIGHT_MODEL,
+            model=self.MODEL,
             messages=[
                 *[
                     {
@@ -141,18 +141,20 @@ class LlmProxy:
                 ],
                 current_message,
             ],  # type: ignore
-            # response_format={"type": "json_object"},
+            response_format={"type": "json_object"},
         )
         response_text = response.choices[0].message.content
         try:
             if response_text:
+                response_text = response_text.strip()
                 response_json = loads(response_text)
                 print(response_json)
                 tool_name = response_json.get("tool")
                 for tool in all_tools:
                     if tool.name == tool_name:
                         return tool, response_json
-        except:
+        except Exception as e:
+            print(e)
             pass
         return None, {}
 
