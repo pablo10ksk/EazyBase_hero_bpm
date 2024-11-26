@@ -41,22 +41,32 @@ class NEWPendingTasksTool(XyzTool):
     def run(self, prompt: str) -> dict:
         concept_name = self.input.concept_name
         tasks = st.session_state.api.get_pending_tasks()
-        is_ok = True
-        all_concepts = self._get_all_concepts_set(tasks)
+        all_concepts = self._get_all_concepts(tasks)
+        if concept_name is not None and concept_name not in all_concepts:
+            return {
+                "tasks": [],
+                "is_ok": False,
+                "all_concepts": all_concepts,
+                "concept_name": concept_name,
+                "filter": {},
+                "concept_keys": [],
+            }
 
-        if concept_name is not None:
-            if concept_name in all_concepts:
-                tasks = self._filter_tasks_by_concept(tasks, concept_name)
-            else:
-                tasks = []
-                is_ok = False
+        tasks = (
+            self._filter_tasks_by_concept(tasks, concept_name)
+            if concept_name is not None
+            else tasks
+        )
 
         last_basedata = None
-        for task in tasks:
-            task["concept"], basedata = st.session_state.api.get_concept_from_task(task)
-            task["metadata"] = st.session_state.api.get_metadata_from_task(task)
-            if basedata:
-                last_basedata = basedata
+        if concept_name is not None:
+            for task in tasks:
+                task["concept"], basedata = st.session_state.api.get_concept_from_task(
+                    task
+                )
+                task["metadata"] = st.session_state.api.get_metadata_from_task(task)
+                if basedata:
+                    last_basedata = basedata
 
         if (
             concept_name is not None
@@ -81,7 +91,7 @@ class NEWPendingTasksTool(XyzTool):
 
         return {
             "tasks": tasks,
-            "is_ok": is_ok,
+            "is_ok": True,
             "all_concepts": all_concepts,
             "concept_name": concept_name,
             "filter": filter,
@@ -144,13 +154,12 @@ class NEWPendingTasksTool(XyzTool):
             filter = {}
 
         for task in tasks:
-            task = {
-                **task,
-                **task["concept"],
-                **task["metadata"],
-            }
-            del task["concept"]
-            del task["metadata"]
+            if "concept" in task:
+                task = {**task, **task["concept"]}
+                del task["concept"]
+            if "metadata" in task:
+                task = {**task, **task["metadata"]}
+                del task["metadata"]
 
         tasks = [self._parse_task(task) for task in tasks]
 
@@ -396,7 +405,7 @@ class NEWPendingTasksTool(XyzTool):
         else:
             return ", ".join(l[:-1]) + " y " + l[-1]
 
-    def _get_all_concepts_set(self, tasks: list[dict]) -> set[str]:
+    def _get_all_concepts(self, tasks: list[dict]) -> set[str]:
         res = set()
         for task in tasks:
             res.add(task["PROCESO_DS"])

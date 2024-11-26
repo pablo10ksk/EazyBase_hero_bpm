@@ -33,3 +33,5 @@ def header():
                         use_container_width=True,
                     )
                 idx += 1
+
+    st.divider()

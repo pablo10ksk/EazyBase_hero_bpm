@@ -102,7 +102,12 @@ class Api:
             ).json()
             res = res["retunobj_"]
             concept = res["attributes"]
-            basedata = list(res["basedata"].items())
+            basedata = list(res["basedata"].items())  # type: list[tuple[str, str]]
+
+            # FIXME: volver a poner todos
+            # basedata is of type (key, value)
+            # we want to remove provisionally all the keys that end with _DT
+            basedata = [x for x in basedata if not x[0].endswith("_DT")]
 
             return concept, basedata
         except:

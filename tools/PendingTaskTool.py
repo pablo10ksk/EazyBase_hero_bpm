@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from uuid import uuid4
 
@@ -32,7 +33,8 @@ class PendingTaskTool(XyzTool):
         task = self._get_task_by_id(task_id)
         metadata = st.session_state.api.get_metadata_from_task(task)
         concept, basedata = st.session_state.api.get_concept_from_task(task)
-        historial = st.session_state.api.get_historial_from_task(task_id)
+        historial = st.session_state.api.get_historial_from_task(task)
+        link = task["EXTERNAL_LINK_DS"]
 
         return {
             "task": task,
@@ -41,6 +43,7 @@ class PendingTaskTool(XyzTool):
             "concept": concept,
             "basedata": basedata,
             "historial": historial,
+            "link": link,
         }
 
     def text(self, data: dict) -> str:
@@ -62,9 +65,16 @@ class PendingTaskTool(XyzTool):
         concept = payload["concept"]
         basedata = payload["basedata"]
         historial = payload["historial"]
+        link = payload["link"]
 
-        st.markdown(text)
-
+        col1, col2 = st.columns([4, 2])
+        with col1:
+            st.markdown(text)
+        with col2:
+            external_link_url = os.getenv("EXTERNAL_LINK_URL")
+            assert external_link_url is not None, "EXTERNAL_LINK_URL is not set"
+            full_link = external_link_url + link
+            st.link_button("Abrir en GENESIS", url=full_link, icon=":material/link:")
         self._render_historial(historial)
 
         with st.expander("**Concepto**", icon="🏷️", expanded=True):
@@ -130,7 +140,6 @@ class PendingTaskTool(XyzTool):
                 reasignable = decision["reassignFl"] == 1
                 transferable = decision["transferFl"] == 1
 
-                # TODO: call the MakeTaskDecisionTool
                 st.button(
                     title,
                     key=f"{str(uuid4())}@{self.message_id}@take_action_{id}",

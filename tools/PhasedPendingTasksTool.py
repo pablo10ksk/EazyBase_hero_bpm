@@ -57,11 +57,16 @@ class PhasedPendingTasksTool(XyzTool):
 
             for col, root_value in zip(cols, task_items[i : i + 2]):
                 with col:
+                    sum_totales = 0
+                    etapas = root_value["ETAPAS_MAP"]
+                    for etapa in etapas:
+                        listado = etapa["TAREA_LST"]
+                        for l in listado:
+                            sum_totales += int(l["TOTAL_PENDING_NM"])
+
                     name = root_value["PROCESO_DS"]
                     icon = ":material/package_2:"
-                    with st.expander(f"**{name}**", icon=icon):
-                        etapas = root_value["ETAPAS_MAP"]
-
+                    with st.expander(f"**{name}** :gray[({sum_totales})]", icon=icon):
                         table = " Nombre | Hoy | Total"
                         table += "\n --- | --- | ---"
                         for etapa in etapas:
