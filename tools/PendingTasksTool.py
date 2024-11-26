@@ -79,7 +79,6 @@ class NEWPendingTasksTool(XyzTool):
                 ("DATE", "Fecha de alta de la tarea"),
             ]
         )
-        print(concept_keys)
         tasks, filter = self._filter_tasks_by_filters(
             concept_name, tasks, concept_keys, prompt
         )

@@ -154,7 +154,7 @@ class LlmProxy:
                     if tool.name == tool_name:
                         return tool, response_json
         except Exception as e:
-            print(e)
+            print("Hubo un error parseando el json de la respuesta: ", e)
             pass
         return None, {}
 
