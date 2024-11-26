@@ -6,7 +6,6 @@ from typing import Any, Optional
 import streamlit as st
 from pydantic import BaseModel
 
-from GlobalPayload import GlobalPayload
 from tools.ExampleQuestion import ExampleQuestion
 
 
@@ -17,7 +16,6 @@ class XyzTool(ABC):
     human_name: str
     human_description: str
 
-    global_payload: GlobalPayload
     message_id: str
 
     example_questions: list[ExampleQuestion] = field(default_factory=list)
@@ -38,7 +36,6 @@ class XyzTool(ABC):
         self.human_name = human_name
         self.human_description = human_description
 
-        self.global_payload = GlobalPayload(token="", userId="")
         self.message_id = ""
         self.schema = schema
         self.example_questions = example_questions
@@ -60,9 +57,6 @@ class XyzTool(ABC):
             "There was the following payload. If you want to hide it, extend the SimpleXyzTool class instead or define your own render method."
         )
         st.json(payload)
-
-    def set_global_payload(self, global_payload: GlobalPayload) -> None:
-        self.global_payload = global_payload
 
     def get_input_schema_description(self) -> str:
         if self.schema:

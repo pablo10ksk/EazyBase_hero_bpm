@@ -32,7 +32,6 @@ def login_form():
                     )
                     with st.session_state.ui_initial:
                         tool = PhasedPendingTasksTool()
-                        tool.global_payload = login.global_payload
                         run = tool.run("")
                         text = tool.text(run)
                         tool.render(text, run)

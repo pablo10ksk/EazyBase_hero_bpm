@@ -4,12 +4,11 @@ from datetime import date, datetime
 from json import dumps, loads
 from uuid import uuid4
 
-import requests
 import streamlit as st
 from pydantic import BaseModel
 
-from Api import get_endpoint
 from tools.ExampleQuestion import ExampleQuestion
+from tools.utils import Utils
 from tools.XyzTool import XyzTool
 
 
@@ -41,7 +40,7 @@ class NEWPendingTasksTool(XyzTool):
 
     def run(self, prompt: str) -> dict:
         concept_name = self.input.concept_name
-        tasks = self._get_all_tasks()
+        tasks = st.session_state.api.get_pending_tasks()
         is_ok = True
         all_concepts = self._get_all_concepts_set(tasks)
 
@@ -54,8 +53,8 @@ class NEWPendingTasksTool(XyzTool):
 
         last_basedata = None
         for task in tasks:
-            task["concept"], basedata = self._get_concept_from_task(task)
-            task["metadata"] = self._get_metadata_from_task(task)
+            task["concept"], basedata = st.session_state.api.get_concept_from_task(task)
+            task["metadata"] = st.session_state.api.get_metadata_from_task(task)
             if basedata:
                 last_basedata = basedata
 
@@ -169,7 +168,7 @@ class NEWPendingTasksTool(XyzTool):
                 op = current_op["op"]
                 value = current_op["value"]
                 try:
-                    current_op["value"] = self._try_parse_date(value)
+                    current_op["value"] = Utils.try_parse_date(value)
                     if op == ">=":
                         current_op["value"] = datetime.combine(
                             current_op["value"], datetime.min.time()
@@ -196,7 +195,7 @@ class NEWPendingTasksTool(XyzTool):
         res = {}
         for key, value in task.items():
             try:
-                res[key] = self._try_parse_date(value)
+                res[key] = Utils.try_parse_date(value)
             except:
                 try:
                     res[key] = float(value)
@@ -397,97 +396,8 @@ class NEWPendingTasksTool(XyzTool):
         else:
             return ", ".join(l[:-1]) + " y " + l[-1]
 
-    def _get_all_tasks(self) -> list:
-        url = get_endpoint("GetPendingTasks")
-        payload = {
-            "token": self.global_payload.token,
-            "userId": self.global_payload.userId,
-            "userTasksFl": "true",
-            "groupsTasksFl": "true",
-            "pendingTaskId": "",
-            "locatorDs": "",
-        }
-        headers = {"Content-Type": "application/json"}
-        tasks = requests.get(url, headers=headers, json=payload).json()
-        for task in tasks:
-            task["DATE"] = self._try_parse_date(task["TAREA_DT"])
-        return tasks
-
-    def _try_parse_date(self, s: str) -> str | date:
-
-        # Try ISO format parsing
-        try:
-            return date.fromisoformat(s)
-        except ValueError:
-            pass  # Not in ISO format
-        try:
-            return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
-        except ValueError:
-            pass
-        # Try custom timestamp format
-        try:
-            if len(s) == 17:
-                # Parse up to seconds
-                datetime_part = datetime.strptime(s[:14], "%Y%m%d%H%M%S")
-                # Parse milliseconds
-                milliseconds = int(s[14:])
-                # Return combined date with microseconds
-                final_datetime = datetime_part.replace(microsecond=milliseconds * 1000)
-                return final_datetime.date()
-        except (ValueError, IndexError):
-            pass  # Not in the expected custom format
-
-        # If all parsing fails, return the original string
-        return s
-
-    def _get_metadata_from_task(self, task: dict):
-        conceptobase_cd = task["CONCEPTOBASE_CD"]
-        conceptobase_id = task["CONCEPTOBASE_ID"]
-
-        url = get_endpoint("GetMetadataProcess")
-        payload = {
-            "token": self.global_payload.token,
-            "cptoBaseCd": conceptobase_cd,
-            "cptoBaseId": conceptobase_id,
-        }
-
-        headers = {"Content-Type": "application/json"}
-        res_raw = requests.get(url, headers=headers, json=payload)
-        res_raw = res_raw.json()[0]
-
-        return {
-            "inicio_DT": res_raw["inicioDt"],
-            "proc_CS": res_raw["proc"],
-            "version_CD": res_raw["versionCd"],
-            "currTask_DS": res_raw["currTask"],
-            "currPhase_DS": res_raw["currPhase"],
-        }
-
     def _get_all_concepts_set(self, tasks: list[dict]) -> set[str]:
         res = set()
         for task in tasks:
             res.add(task["PROCESO_DS"])
         return res
-
-    def _get_concept_from_task(self, task: dict) -> tuple[dict, list[tuple[str, str]]]:
-        try:
-            conceptobase_cd = task["CONCEPTOBASE_CD"]
-            conceptobase_id = task["CONCEPTOBASE_ID"]
-
-            url = get_endpoint("getConceptFromCptId")
-            payload = {
-                "token": self.global_payload.token,
-                "mapData": {
-                    "CONCEPTOBASE_CD": conceptobase_cd,
-                    "CONCEPTOBASE_ID": conceptobase_id,
-                },
-            }
-            headers = {"Content-Type": "application/json"}
-            res = requests.get(url, headers=headers, json=payload).json()
-            res = res["retunobj_"]
-            concept = res["attributes"]
-            basedata = list(res["basedata"].items())
-
-            return concept, basedata
-        except:
-            return {}, []

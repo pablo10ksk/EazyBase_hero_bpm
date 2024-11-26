@@ -1,7 +1,6 @@
-import requests
+import streamlit as st
 from pydantic import BaseModel
 
-from Api import get_endpoint
 from tools.SimpleXyzTool import SimpleXyzTool
 
 
@@ -24,19 +23,10 @@ class MakeTaskDecisionTool(SimpleXyzTool):
         )
 
     def run(self, prompt: str) -> dict:
-        url = get_endpoint("MakeDecision")
-        payload = {
-            "token": self.global_payload.token,
-            "ejecTareaId": self.input.task_id,
-            "opcionCd": self.input.option_code,
-        }
-        headers = {"Content-Type": "application/json"}
-
-        response = requests.get(url, headers=headers, json=payload)
-        return {
-            "ok": response.ok,
-            "data": response.json(),
-        }
+        return st.session_state.api.make_decision(
+            task_id=self.input.task_id,
+            option_code=self.input.option_code,
+        )
 
     def text(self, data: dict) -> str:
         if data["ok"]:

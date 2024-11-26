@@ -1,13 +1,10 @@
 from datetime import datetime
-from typing import Optional
 from uuid import uuid4
 
-import requests
 import streamlit as st
 from pandas import DataFrame
 from pydantic import BaseModel
 
-from Api import get_endpoint
 from personSelector import autocomplete
 from tools.XyzTool import XyzTool
 from ui.grid import grid
@@ -31,11 +28,12 @@ class PendingTaskTool(XyzTool):
 
     def run(self, prompt: str) -> dict:
         task_id = self.input.task_id
-        options = self._get_task_options(task_id)
+        options = st.session_state.api.get_task_options(task_id)
         task = self._get_task_by_id(task_id)
-        metadata = self._get_metadata_from_task(task)
-        concept, basedata = self._get_concept_from_task(task)
-        historial = self._get_historial_from_task(task)
+        metadata = st.session_state.api.get_metadata_from_task(task)
+        concept, basedata = st.session_state.api.get_concept_from_task(task)
+        historial = st.session_state.api.get_historial_from_task(task_id)
+
         return {
             "task": task,
             "options": options,
@@ -154,85 +152,9 @@ class PendingTaskTool(XyzTool):
                         label="Transferir o reasignar a...",
                     )
 
-    def _get_task_options(self, task_id: str) -> dict:
-        url = get_endpoint("GetTaskOptionsAdvance")
-        payload = {
-            "token": self.global_payload.token,
-            "taskExecId": task_id,
-        }
-        headers = {"Content-Type": "application/json"}
-        res = requests.get(url, headers=headers, json=payload)
-        return res.json()
-
-    def _get_all_tasks(self) -> list:
-        url = get_endpoint("GetPendingTasks")
-        payload = {
-            "token": self.global_payload.token,
-            "userId": self.global_payload.userId,
-            "userTasksFl": "true",
-            "groupsTasksFl": "true",
-            "pendingTaskId": "",
-            "locatorDs": "",
-        }
-        headers = {"Content-Type": "application/json"}
-        return requests.get(url, headers=headers, json=payload).json()
-
     def _get_task_by_id(self, task_id) -> dict:
-        tasks = self._get_all_tasks()
+        tasks = st.session_state.api.get_pending_tasks()
         for task in tasks:
             if task["EJECUCION_ID"] == task_id:
                 return task
         assert False, f"Task with id {task_id} not found"
-
-    def _get_concept_from_task(self, task: dict) -> tuple[dict, list[tuple[str, str]]]:
-        try:
-            conceptobase_cd = task["CONCEPTOBASE_CD"]
-            conceptobase_id = task["CONCEPTOBASE_ID"]
-
-            url = get_endpoint("getConceptFromCptId")
-            payload = {
-                "token": self.global_payload.token,
-                "mapData": {
-                    "CONCEPTOBASE_CD": conceptobase_cd,
-                    "CONCEPTOBASE_ID": conceptobase_id,
-                },
-            }
-            headers = {"Content-Type": "application/json"}
-            res = requests.get(url, headers=headers, json=payload).json()
-            res = res["retunobj_"]
-            concept = res["attributes"]
-            basedata = list(res["basedata"].items())
-
-            return concept, basedata
-        except:
-            return {}, []
-
-    def _get_metadata_from_task(self, task: dict):
-        conceptobase_cd = task["CONCEPTOBASE_CD"]
-        conceptobase_id = task["CONCEPTOBASE_ID"]
-
-        url = get_endpoint("GetMetadataProcess")
-        payload = {
-            "token": self.global_payload.token,
-            "cptoBaseCd": conceptobase_cd,
-            "cptoBaseId": conceptobase_id,
-        }
-        headers = {"Content-Type": "application/json"}
-        res = requests.get(url, headers=headers, json=payload)
-        return res.json()[0]
-
-    def _get_historial_from_task(self, task: dict) -> list:
-        conceptobase_cd = task["CONCEPTOBASE_CD"]
-        conceptobase_id = task["CONCEPTOBASE_ID"]
-        proceso_id = task["procId"]
-
-        url = get_endpoint("GetHistExecBPM")
-        payload = {
-            "token": self.global_payload.token,
-            "cptoCd": conceptobase_cd,
-            "cptoId": conceptobase_id,
-            "procId": proceso_id,
-        }
-        headers = {"Content-Type": "application/json"}
-        res = requests.get(url, headers=headers, json=payload)
-        return res.json()

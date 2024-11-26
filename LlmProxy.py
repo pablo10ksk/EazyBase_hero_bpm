@@ -46,7 +46,6 @@ class LlmProxy:
         tool, input = self.route_prompt(prompt)
 
         if tool:
-            tool.global_payload = self.login.global_payload
             tool.message_id = new_id
             tool.set_input(input)
             payload = tool.run(prompt)

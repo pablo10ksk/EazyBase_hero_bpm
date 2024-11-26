@@ -1,33 +1,47 @@
 import os
 from dataclasses import dataclass
+from typing import Optional
 
 import requests
-
-from GlobalPayload import GlobalPayload
 
 
 @dataclass
 class Login:
-    global_payload: GlobalPayload
+    _token: Optional[str] = None
+    _userId: Optional[str] = None
+
+    _user: Optional[str] = None
+    _password: Optional[str] = None
 
     def __init__(self):
-        self.global_payload = GlobalPayload(token="", userId="")
+        pass
 
-    def get_token(self) -> str:
-        return self.global_payload.token
+    def get_token(self) -> Optional[str]:
+        return self._token
+
+    def get_user_id(self) -> Optional[str]:
+        return self._userId
 
     def is_logged_in(self) -> bool:
-        return self.get_token() != ""
+        return self._token is not None and self._userId is not None
 
     def login(self, user: str, password: str) -> None:
+        self._user = user
+        self._password = password
+        self.renew_token()
+
+    def renew_token(self) -> None:
         login_url = os.getenv("LOGIN_URL")
         assert login_url is not None, "LOGIN_URL is not set"
+
+        assert self._user is not None, "Cannot renew token without user"
+        assert self._password is not None, "Cannot renew token without password"
 
         response = requests.get(
             url=login_url,
             json={
-                "loginDs": user,
-                "pwdCd": password,
+                "loginDs": self._user,
+                "pwdCd": self._password,
             },
             headers={
                 "Content-Type": "application/json",
@@ -37,11 +51,11 @@ class Login:
             json = response.json()
             token = json["TOKEN_CD"]
             user_id = json["USR_CD"]
-            self.global_payload.token = token
-            self.global_payload.userId = user_id
+            self._token = token
+            self._userId = user_id
         except:
             self.logout()
 
     def logout(self) -> None:
-        self.global_payload.token = ""
-        self.global_payload.userId = ""
+        self._token = None
+        self._userId = None

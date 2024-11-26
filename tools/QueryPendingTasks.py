@@ -1,10 +1,8 @@
-import requests
 import streamlit as st
 from pandas import DataFrame
 from pandasai import SmartDataframe
 from pandasai.llm import OpenAI
 
-from Api import get_endpoint
 from tools.ExampleQuestion import ExampleQuestion
 from tools.XyzTool import XyzTool
 
@@ -26,19 +24,7 @@ class GraphPendingTasksTool(XyzTool):
         )
 
     def run(self, prompt: str) -> dict:
-        url = get_endpoint("GetPendingTasks")
-        payload = {
-            "token": self.global_payload.token,
-            "userId": self.global_payload.userId,
-            "userTasksFl": "true",
-            "groupsTasksFl": "true",
-            "pendingTaskId": "",
-            "locatorDs": "",
-        }
-        headers = {"Content-Type": "application/json"}
-
-        response = requests.get(url, headers=headers, json=payload)
-        tasks = response.json()
+        tasks = st.session_state.api.get_pending_tasks()
         llm = OpenAI(temperature=0)
         df = SmartDataframe(
             tasks,

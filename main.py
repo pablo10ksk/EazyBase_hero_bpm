@@ -1,6 +1,7 @@
 import dotenv
 import streamlit as st
 
+from Api import Api
 from Chatbot import chatbot
 from LlmProxy import LlmProxy
 from Login import Login
@@ -21,6 +22,7 @@ header()
 if "client" not in st.session_state:
     st.session_state.login = Login()
     st.session_state.client = LlmProxy(login=st.session_state.login)
+    st.session_state.api = Api(login=st.session_state.login)
 
 sidebar()
 

@@ -5,11 +5,9 @@ from datetime import date, datetime
 from typing import Any
 from uuid import uuid4
 
-import requests
 import streamlit as st
 from pydantic import BaseModel
 
-from Api import get_endpoint
 from tools.ExampleQuestion import ExampleQuestion
 from tools.XyzTool import XyzTool
 
@@ -84,9 +82,9 @@ class OldPendingTasksTool(XyzTool):
         is_aggregated = self.input.aggregated
         filters = self.input.filters
         tasks = (
-            self._get_all_tasks_phased()
+            st.session_state.api.get_all_tasks_phased()
             if is_aggregated
-            else self._filter_tasks(self._get_all_tasks(), filters)
+            else self._filter_tasks(st.session_state.api.get_all_tasks(), filters)
         )
         return {
             "phased": is_aggregated,
@@ -341,32 +339,6 @@ class OldPendingTasksTool(XyzTool):
                     return False
         return True
 
-    def _get_all_tasks(self) -> list:
-        url = get_endpoint("GetPendingTasks")
-        payload = {
-            "token": self.global_payload.token,
-            "userId": self.global_payload.userId,
-            "userTasksFl": "true",
-            "groupsTasksFl": "true",
-            "pendingTaskId": "",
-            "locatorDs": "",
-        }
-        headers = {"Content-Type": "application/json"}
-        tasks = requests.get(url, headers=headers, json=payload).json()
-        for task in tasks:
-            task["DATE"] = datetime.fromisoformat(task["TAREA_DT"])
-            task["metadata"] = self._get_metadata_from_task(task)
-        return tasks
-
-    def _get_all_tasks_phased(self) -> list:
-        url = get_endpoint("GetPendingTasksPhased")
-        payload = {
-            "token": self.global_payload.token,
-            "USR_CD": self.global_payload.userId,
-        }
-        headers = {"Content-Type": "application/json"}
-        return requests.get(url, headers=headers, json=payload).json()
-
     def _get_number_tasks_explanation(self, n: int) -> str:
         match n:
             case 0:
@@ -401,26 +373,3 @@ class OldPendingTasksTool(XyzTool):
             prompt=f"View the task whose id is '{task_id}'",
             shallow_prompt=f"Ver tarea '{name}'",
         )
-
-    def _get_metadata_from_task(self, task: dict):
-        conceptobase_cd = task["CONCEPTOBASE_CD"]
-        conceptobase_id = task["CONCEPTOBASE_ID"]
-
-        url = get_endpoint("GetMetadataProcess")
-        payload = {
-            "token": self.global_payload.token,
-            "cptoBaseCd": conceptobase_cd,
-            "cptoBaseId": conceptobase_id,
-        }
-
-        headers = {"Content-Type": "application/json"}
-        res_raw = requests.get(url, headers=headers, json=payload)
-        res_raw = res_raw.json()[0]
-
-        return {
-            "inicio_DT": res_raw["inicioDt"],
-            "proc_CS": res_raw["proc"],
-            "version_CD": res_raw["versionCd"],
-            "currTask_DS": res_raw["currTask"],
-            "currPhase_DS": res_raw["currPhase"],
-        }

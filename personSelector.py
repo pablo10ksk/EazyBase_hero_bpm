@@ -1,27 +1,16 @@
 from typing import Any
 
-import requests
 import streamlit as st
 from streamlit_searchbox import st_searchbox
 
-from Api import get_endpoint
-
 
 def search_name(input: str) -> list[tuple[str, Any]]:
-    if input.strip() == "":
-        return []
-    url = get_endpoint("getUserReassignTask")
-    payload = {
-        "token": st.session_state.login.get_token(),
-        "filterDs": input,
-    }
-    headers = {"Content-Type": "application/json"}
-    response = requests.get(url, headers=headers, json=payload).json()
+    reassign_names = st.session_state.api.get_reassign_names(input)
     try:
         options = []
-        for usr in response["USR"]:
+        for usr in reassign_names["USR"]:
             options.append((usr["fullname"], usr))
-        for grp in response["GRP"]:
+        for grp in reassign_names["GRP"]:
             options.append((grp["grpName"], grp))
         return options
     except Exception as e:

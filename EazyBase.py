@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from json import load
 
 import requests
+import streamlit as st
 
 from Login import Login
 
@@ -17,28 +18,9 @@ class EazyBase:
             self.company_owner = config["company_"]
 
     def insert_into_kbase(self, mapdata, metadata: dict):
-        url = os.getenv("EAZYBASE_URL")
-        assert url is not None, "EAZYBASE_URL is not set"
-
-        json = {
-            "mapData": {
-                "clientowner_cd": self.company_owner,
-                "companyowner_id": self.company_owner,
-                "kbasefather_cd": mapdata["kbasefather_cd"],
-                "hasprocess_fl": "0",
-                "kbasename_cd": mapdata["kbasename_cd"],
-                "kbasedescription_ds": mapdata["kbasedescription_ds"],
-                "kbasename_ds": mapdata["kbasename_ds"],
-                "hasoutcome_cd": "0",
-                "hasrequirements_cd": "0",
-                "process_id": "",
-                "alert_to_ds": "",
-                "metadata_": metadata,
-            },
-            "token": self.login.global_payload.token,
-        }
-        response = requests.post(url=url, json=json).json()
-        return response["insertObject"]
+        return st.session_state.api.insert_into_kbase(
+            self.company_owner, mapdata, metadata
+        )
 
     # TODO: remove?
     def _unify_to_filed(self, fields, mapdata, base_data: str = ""):

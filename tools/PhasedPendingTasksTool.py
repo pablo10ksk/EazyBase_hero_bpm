@@ -1,7 +1,5 @@
-import requests
 import streamlit as st
 
-from Api import get_endpoint
 from tools.XyzTool import XyzTool
 
 
@@ -16,7 +14,7 @@ class PhasedPendingTasksTool(XyzTool):
         )
 
     def run(self, prompt: str) -> dict:
-        tasks = self._get_all_tasks_phased()
+        tasks = st.session_state.api.get_all_tasks_phased()
         num_all, num_today = self._get_nums(tasks)
 
         return {
@@ -75,12 +73,3 @@ class PhasedPendingTasksTool(XyzTool):
                                 total_l = l["TOTAL_PENDING_NM"]
                                 table += f"\n:gray[{etapa_name}] / {nombre_l} | {today_l} | {total_l}"
                         st.markdown(table)
-
-    def _get_all_tasks_phased(self) -> dict:
-        url = get_endpoint("GetPendingTasksPhased")
-        payload = {
-            "token": self.global_payload.token,
-            "USR_CD": self.global_payload.userId,
-        }
-        headers = {"Content-Type": "application/json"}
-        return requests.get(url, headers=headers, json=payload).json()
