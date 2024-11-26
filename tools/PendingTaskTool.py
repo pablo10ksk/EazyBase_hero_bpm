@@ -35,13 +35,14 @@ class PendingTaskTool(XyzTool):
         options = self._get_task_options(task_id)
         task = self._get_task_by_id(task_id)
         metadata = self._get_metadata_from_task(task)
-        concept = self._get_concept_from_task(task)
+        concept, basedata = self._get_concept_from_task(task)
         historial = self._get_historial_from_task(task)
         return {
             "task": task,
             "options": options,
             "metadata": metadata,
             "concept": concept,
+            "basedata": basedata,
             "historial": historial,
         }
 
@@ -53,6 +54,7 @@ class PendingTaskTool(XyzTool):
         options = payload["options"]
         metadata = payload["metadata"]
         concept = payload["concept"]
+        basedata = payload["basedata"]
         historial = payload["historial"]
 
         self._render_task(task)
@@ -65,12 +67,11 @@ class PendingTaskTool(XyzTool):
         with st.expander("Metadatos", icon="📋"):
             grid(metadata)
 
-        proc = metadata["proc"]
         with st.expander("Propiedades del concepto", icon="🏷️"):
-            self._render_concept(concept, proc)
+            self._render_concept(concept, basedata)
 
-    def _render_concept(self, concept: dict, proc: str) -> None:
-        concept_view = Task.get_view_from_concept(proc)
+    def _render_concept(self, concept: dict, basedata: list[tuple[str, str]]) -> None:
+        concept_view = basedata
         if concept_view:
             self._render_concept_properties(concept, concept_view)
         else:
@@ -231,7 +232,7 @@ class PendingTaskTool(XyzTool):
                 return task
         assert False, f"Task with id {task_id} not found"
 
-    def _get_concept_from_task(self, task: dict) -> dict:
+    def _get_concept_from_task(self, task: dict) -> tuple[dict, list[tuple[str, str]]]:
         try:
             conceptobase_cd = task["CONCEPTOBASE_CD"]
             conceptobase_id = task["CONCEPTOBASE_ID"]
@@ -245,10 +246,16 @@ class PendingTaskTool(XyzTool):
                 },
             }
             headers = {"Content-Type": "application/json"}
-            res = requests.get(url, headers=headers, json=payload)
-            return res.json()["retunobj_"]["attributes"]
+            res = requests.get(url, headers=headers, json=payload).json()
+            res = res["retunobj_"]
+            concept = res["attributes"]
+            basedata = res["basedata"]
+
+            # Formato: [("Fecha prevista de emisión", "PREVEMI_DT"), ...]
+            basedata = [(v, k) for k, v in basedata.items()]
+            return concept, basedata
         except:
-            return {}
+            return {}, []
 
     def _get_metadata_from_task(self, task: dict):
         conceptobase_cd = task["CONCEPTOBASE_CD"]
