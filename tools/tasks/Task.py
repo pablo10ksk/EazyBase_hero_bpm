@@ -1,9 +1,3 @@
-from datetime import date
-from typing import Optional
-
-from pydantic import BaseModel, create_model
-
-
 class Task:
 
     @staticmethod
@@ -34,45 +28,15 @@ class Task:
         }
 
     @staticmethod
-    def get_all_views_concepts() -> list[tuple[str, str]]:
-        res = []
-        views = Task.get_views()
-        for value in views.values():
-            res.extend(value)
-        return res
-
-    @staticmethod
-    def get_all_filters() -> type[BaseModel]:
-        # _DS, _CD are text fields -> add one field
-        # _NM are number fields -> add two: min and max
-        # _DT are date fields -> add two: min and max
-        concepts = Task.get_all_views_concepts()
-        fields = {}
-        for _, field_name in concepts:
-            if field_name.endswith("_DS") or field_name.endswith("_CD"):
-                fields[field_name] = (Optional[str], None)
-            elif field_name.endswith("_NM"):
-                fields[field_name + "_min"] = (Optional[int], None)
-                fields[field_name + "_max"] = (Optional[int], None)
-            elif field_name.endswith("_DT"):
-                fields[field_name + "_min"] = (Optional[date], None)
-                fields[field_name + "_max"] = (Optional[date], None)
-            else:
-                raise ValueError(f"Unknown field type for {field_name}")
-        return create_model("Filters", **fields)
-
-    @staticmethod
     def get_view_from_concept(
         concept_name: str | None,
     ) -> list[tuple[str, str]]:
-        if concept_name is not None:
-            res = Task.get_views().get(concept_name)
-            if res is None:
-                res = []
-        else:
-            res = []
-        res.append(("Fecha de creación de la tarea pendiente", "DATE"))
-        res.append(("Nombre de la tarea", "TAREA_DS"))
-        res.append(("Nombre de tarea actual", "currTask"))
-        res.append(("Nombre de fase actual", "currPhase"))
+        res = Task.get_views().get(concept_name, []) if concept_name is not None else []
+
+        task_view = [
+            ("Nombre de la tarea", "TAREA_DS"),
+            ("Nombre de tarea actual", "currTask"),
+            ("Nombre de fase actual", "currPhase"),
+        ]
+        res.extend(task_view)
         return res

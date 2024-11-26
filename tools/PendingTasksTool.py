@@ -79,16 +79,19 @@ class NEWPendingTasksTool(XyzTool):
         for key, value in concept_keys:
             concepts_description += f"- **{value}**: {value}\n"
         router_prompt = f"""
-        The user has made the following question:
+        We are within a tool that shows pending tasks. The user has made the following question:
         -------
         {prompt}
         -------
 
-        The available filters are:\n{concepts_description}
+        We already know that the user is asking for pending tasks (DO NOT add filters for 'pending' or 'active' nor anything like that!!!). Now we want to extract the filters that the user has specified. The available filters are:
+        ----
+        {concepts_description}
+        ----
 
-        You must only use as keys the bolded fields without any changes.
+        No filter is mandatory. Only use as keys the bolded fields without any changes.
             
-        Return a json object with the filters you want to apply. For example (keys may not correspond):
+        Return a json object with the filters that the user wants to apply. For example (keys may not correspond):
         
         """
 
@@ -106,9 +109,9 @@ class NEWPendingTasksTool(XyzTool):
             }
         )
 
-        router_prompt += """\nThat is, for the fields that you want to filter, provide a list of operations and values. The operations are: ">=", "<=", "contains", and "eq". There are no more operations. Do not use 'eq' for dates; use >= and/or <=."""
-
-        router_prompt += f"\nFor reference, today is {today}. Write the dates in the same format. Do not wrap the answer within ``` marks."
+        router_prompt += f"""\n\nThat is, for the fields that you want to filter, provide a list of operations and values under "op" and "value". The only values for "op" are: ">=", "<=", "contains", and "eq". There are no more operations. Do not use 'eq' for dates; use >= and/or <=. For "value", always fill in strings. 
+        
+        Regarding dates, for reference, today is {today}. Write the dates in the same format. Do not wrap the answer within ``` marks. Go!"""
 
         filter = st.session_state.client.regular_call_with_prompt_without_history(
             router_prompt
@@ -455,6 +458,6 @@ class NEWPendingTasksTool(XyzTool):
             }
             headers = {"Content-Type": "application/json"}
             res = requests.get(url, headers=headers, json=payload)
-            return res.json()["retunobj_"]
+            return res.json()["retunobj_"]["attributes"]
         except:
             return {}

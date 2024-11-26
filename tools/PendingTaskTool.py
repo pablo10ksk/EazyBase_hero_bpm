@@ -70,27 +70,20 @@ class PendingTaskTool(XyzTool):
             self._render_concept(concept, proc)
 
     def _render_concept(self, concept: dict, proc: str) -> None:
-        # Get the first 5 keys of the concept
-        keys = list(concept.keys())
-
-        # # Render only the first 5 keys
-        # concept = {key: concept[key] for key in keys}
-        # grid(concept)
-
-        hardcoded = Task.get_view_from_concept(proc)
-        if hardcoded:
-            self._render_concept_properties(concept, hardcoded)
+        concept_view = Task.get_view_from_concept(proc)
+        if concept_view:
+            self._render_concept_properties(concept, concept_view)
         else:
             st.caption("No se ha encontrado una vista predefinida para este concepto.")
             grid(concept)
 
     def _render_concept_properties(
-        self, concept: dict, hardcoded: list[tuple[str, str]]
+        self, concept: dict, concept_view: list[tuple[str, str]]
     ) -> None:
         # Create pairs of items from the hardcoded list
-        for i in range(0, len(hardcoded), 2):
+        for i in range(0, len(concept_view), 2):
             cols = st.columns(2)  # Create two columns for each row
-            for col, (name, key) in zip(cols, hardcoded[i : i + 2]):
+            for col, (name, key) in zip(cols, concept_view[i : i + 2]):
                 with col:
                     st.caption(name)
                     value = concept.get(key, "")
@@ -253,7 +246,7 @@ class PendingTaskTool(XyzTool):
             }
             headers = {"Content-Type": "application/json"}
             res = requests.get(url, headers=headers, json=payload)
-            return res.json()["retunobj_"]
+            return res.json()["retunobj_"]["attributes"]
         except:
             return {}
 
