@@ -42,18 +42,15 @@ class NEWPendingTasksTool(XyzTool):
     def run(self, prompt: str) -> dict:
         concept_name = self.input.concept_name
         tasks = self._get_all_tasks()
-        ok = True
+        is_ok = True
         all_concepts = self._get_all_concepts_set(tasks)
-
-        # if concept_name is not None and concept_name in all_concepts:
-        #     tasks = self._filter_tasks_by_concept(tasks, concept_name)
 
         if concept_name is not None:
             if concept_name in all_concepts:
                 tasks = self._filter_tasks_by_concept(tasks, concept_name)
             else:
                 tasks = []
-                ok = False
+                is_ok = False
 
         last_basedata = None
         for task in tasks:
@@ -85,7 +82,7 @@ class NEWPendingTasksTool(XyzTool):
 
         return {
             "tasks": tasks,
-            "ok": ok,
+            "is_ok": is_ok,
             "all_concepts": all_concepts,
             "concept_name": concept_name,
             "filter": filter,
@@ -255,13 +252,13 @@ class NEWPendingTasksTool(XyzTool):
     def text(self, data: dict) -> str:
         tasks = data["tasks"]
         all_concepts = data["all_concepts"]
-        ok = data["ok"]
+        is_ok = data["is_ok"]
         concept_name = data["concept_name"]
         all_concepts_bold = [f"**{concept}**" for concept in all_concepts]
         all_concepts_bold = self._join_spanish(all_concepts_bold)
 
-        if not ok:
-            res = f"No hay tareas pendientes de tipo '{concept_name}.\n\n"
+        if not is_ok:
+            res = f"No hay tareas pendientes de tipo '{concept_name}'.\n\n"
             res += f"Los tipos disponibles son: {all_concepts_bold}."
             return res
 
@@ -278,14 +275,14 @@ class NEWPendingTasksTool(XyzTool):
     def render(self, text: str, payload: dict) -> None:
         tasks = payload["tasks"]
         all_concepts = payload["all_concepts"]
-        ok = payload["ok"]
+        is_ok = payload["is_ok"]
         concept_name = payload["concept_name"]
         filter = payload["filter"]
         concept_keys = payload["concept_keys"]
 
         explained_filter = self._explain_filter(filter, concept_keys)
 
-        if ok:
+        if is_ok:
             st.markdown(text)
             if explained_filter != "":
                 st.info(explained_filter)
