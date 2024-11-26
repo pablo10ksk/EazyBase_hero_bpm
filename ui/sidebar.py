@@ -1,5 +1,7 @@
 import streamlit as st
 
+from tools.PhasedPendingTasksTool import PhasedPendingTasksTool
+
 
 def sidebar():
     """
@@ -28,6 +30,12 @@ def login_form():
                         "Has iniciado sesión",
                         icon=":material/check:",
                     )
+                    with st.session_state.ui_initial:
+                        tool = PhasedPendingTasksTool()
+                        tool.global_payload = login.global_payload
+                        run = tool.run("")
+                        text = tool.text(run)
+                        tool.render(text, run)
                 else:
                     st.error(
                         "No se pudo iniciar sesión",

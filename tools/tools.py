@@ -2,6 +2,7 @@ from tools.MakeTaskDecisionTool import MakeTaskDecisionTool
 from tools.OldPendingTasksTool import OldPendingTasksTool
 from tools.PendingTasksTool import NEWPendingTasksTool
 from tools.PendingTaskTool import PendingTaskTool
+from tools.PhasedPendingTasksTool import PhasedPendingTasksTool
 from tools.QueryPendingTasks import GraphPendingTasksTool
 from tools.XyzTool import XyzTool
 
@@ -14,6 +15,7 @@ all_tools: list[XyzTool] = [
     GraphPendingTasksTool(),
     PendingTaskTool(),
     MakeTaskDecisionTool(),
+    PhasedPendingTasksTool(),
 ]
 
 # We add the Summary tool at the end

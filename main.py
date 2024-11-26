@@ -4,7 +4,6 @@ import streamlit as st
 from Chatbot import chatbot
 from LlmProxy import LlmProxy
 from Login import Login
-from personSelector import autocomplete
 from ui.header import header
 from ui.sidebar import sidebar
 from ui.styles import styles
@@ -24,6 +23,10 @@ if "client" not in st.session_state:
     st.session_state.client = LlmProxy(login=st.session_state.login)
 
 sidebar()
+
+if "ui_initial" not in st.session_state:
+    ui_initial = st.container()
+    st.session_state.ui_initial = ui_initial
 
 for message in st.session_state.client.historial._messages:
     with st.chat_message(message.role):
