@@ -314,12 +314,13 @@ class NEWPendingTasksTool(XyzTool):
                             id = task["EJECUCION_ID"]
                             name = task["TAREA_DS"]
                             link = task["EXTERNAL_LINK_DS"]
+                            exec_id = task["EJECUCION_TAREA_ID"]
                             with cols[col_idx]:
-                                self._display_task(id, name, link)
+                                self._display_task(exec_id, name, link)
         else:
             st.error(text)
 
-    def _display_task(self, task_id: str, name: str, link: str) -> None:
+    def _display_task(self, task_exec_id: str, name: str, link: str) -> None:
         external_link_url = os.getenv("EXTERNAL_LINK_URL")
         assert external_link_url is not None, "EXTERNAL_LINK_URL is not set"
         full_link = external_link_url + link
@@ -330,10 +331,10 @@ class NEWPendingTasksTool(XyzTool):
             st.markdown(f"[:material/link:]({full_link})")
         with col2:
             st.button(
-                key=f"{uuid}@{self.message_id}@prompt_view_task_{task_id}",
+                key=f"{uuid}@{self.message_id}@prompt_view_task_{task_exec_id}",
                 label=name,
                 on_click=self._view_task_callback,
-                args=(task_id, name),
+                args=(task_exec_id, name),
                 use_container_width=True,
             )
 

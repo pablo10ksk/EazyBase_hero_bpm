@@ -7,7 +7,7 @@ from tools.SimpleXyzTool import SimpleXyzTool
 class MakeTaskDecisionInput(BaseModel):
     task_id: str
     option_code: str
-    # comment: str | None
+    option_name: str
 
 
 class MakeTaskDecisionTool(SimpleXyzTool):
@@ -29,8 +29,16 @@ class MakeTaskDecisionTool(SimpleXyzTool):
         )
 
     def text(self, data: dict) -> str:
+        name = self.input.option_name
         if data["ok"]:
-            return "The decision was made successfully."
+            return f"Se ha tomado la decisión '{name}' sobre la tarea."
         else:
             message = data["data"]["message"]
-            return f"An error occurred: {message}"
+            return f"No se ha podido tomar la decisión '{name}': {message}"
+
+    def render(self, text: str, payload: dict) -> None:
+        ok = payload["ok"]
+        if ok:
+            st.success(text)
+        else:
+            st.error(text)

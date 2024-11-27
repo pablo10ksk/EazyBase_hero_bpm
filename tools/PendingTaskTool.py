@@ -147,7 +147,7 @@ class PendingTaskTool(XyzTool):
                     use_container_width=True,
                     icon=":material/start:",
                     on_click=lambda in_title, in_id, in_opt: ask_shallow_question(
-                        prompt=f"Run the make task decision tool with parameters: task_id = '{in_id}' and option_code = '{in_opt}'",
+                        prompt=f"Run the make task decision tool with parameters: task_id = '{in_id}', option_code = '{in_opt}' and option_name = '{in_title}'.",
                         shallow_prompt=f"Toma la decisión '{in_title}'.",
                     ),
                     args=(title, self.input.task_id, id),
@@ -164,6 +164,6 @@ class PendingTaskTool(XyzTool):
     def _get_task_by_id(self, task_id) -> dict:
         tasks = st.session_state.api.get_pending_tasks()
         for task in tasks:
-            if task["EJECUCION_ID"] == task_id:
+            if task["EJECUCION_TAREA_ID"] == task_id:
                 return task
         assert False, f"Task with id {task_id} not found"
