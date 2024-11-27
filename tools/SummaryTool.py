@@ -8,7 +8,7 @@ class SummaryTool(SimpleXyzTool):
     def __init__(self):
         super().__init__(
             name="summary",
-            description="This is the summary tool. Use this when the user asks for a summary of the capabilities or tools of the chatbot. For instance: _What can I do here?_, _Which tools are available?_, etc. Also use this when the user asks for help, or says hi.",
+            description="This is the summary tool. Use this when the user asks for a summary of the capabilities or tools of the chatbot. For instance: _¿Qué puedo hacer en este chat?_, _¿Qué herramientas están disponibles?_, etc. Also use this when the user asks for help, or says hi.",
             human_name="Resumen de capacidades",
             human_description="Muestra un resumen de las capacidades del chatbot.",
             example_questions=[

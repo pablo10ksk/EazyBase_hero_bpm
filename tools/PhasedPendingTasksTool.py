@@ -8,7 +8,7 @@ class PhasedPendingTasksTool(XyzTool):
     def __init__(self):
         super().__init__(
             name="phased_pending_tasks",
-            description="Displays pending tasks by phases. ONLY use this tool if the user asks by phase (fase) or aggregated (agregadas) or agrupadas.",
+            description="Displays pending tasks by phases. ONLY use this tool if the user asks by phase (fase) or aggregated (agregadas) or agrupadas and WITH NO filters.",
             human_name="Listar tareas pendientes por fase",
             human_description="Muestra las tareas pendientes por fases.",
         )
