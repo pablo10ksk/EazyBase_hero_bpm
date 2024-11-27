@@ -80,8 +80,8 @@ class NEWPendingTasksTool(XyzTool):
         concept_keys.extend(
             [
                 ("TAREA_DS", "Nombre de la tarea"),
-                ("currTask", "Nombre de tarea actual"),
-                ("currPhase", "Nombre de fase actual"),
+                ("currTask_DS", "Nombre de tarea actual"),
+                ("currPhase_DS", "Nombre de fase actual"),
                 ("DATE", "Fecha de alta de la tarea"),
             ]
         )
@@ -153,14 +153,7 @@ class NEWPendingTasksTool(XyzTool):
         except:
             filter = {}
 
-        for task in tasks:
-            if "concept" in task:
-                task = {**task, **task["concept"]}
-                del task["concept"]
-            if "metadata" in task:
-                task = {**task, **task["metadata"]}
-                del task["metadata"]
-
+        tasks = [self._reassign_concept_and_metadata(task) for task in tasks]
         tasks = [self._parse_task(task) for task in tasks]
 
         # del every operation whose value is concept_name
@@ -210,6 +203,16 @@ class NEWPendingTasksTool(XyzTool):
                     res[key] = float(value)
                 except:
                     res[key] = value
+        return res
+
+    def _reassign_concept_and_metadata(self, task: dict) -> dict:
+        res = {}
+        for key, value in task.items():
+            if key in ["concept", "metadata"]:
+                for sub_key, sub_value in value.items():
+                    res[sub_key] = sub_value
+            else:
+                res[key] = value
         return res
 
     def _apply_filters_to_task(self, task: dict, filter: dict) -> bool:
