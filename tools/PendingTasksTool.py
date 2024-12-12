@@ -59,12 +59,14 @@ class NEWPendingTasksTool(XyzTool):
         )
 
         last_basedata = None
-        # TODO: By pablo check
         if concept_name is not None:
             for task in tasks:
                 jsoncpt = loads(task["objectdata"])
                 task["concept"] = jsoncpt["attributes"]
                 basedata = jsoncpt["basedata"]
+
+                basedata = list(basedata.items())
+                basedata = [x for x in basedata if not x[0].endswith("_DT")]
                 # task["concept"], basedata = st.session_state.api.get_concept_from_task(
                 #    task
                 # )
@@ -83,7 +85,7 @@ class NEWPendingTasksTool(XyzTool):
             concept_keys = []
         concept_keys.extend(
             [
-                ("TAREA_DS", "Nombre de la tarea"),
+                ("taskDs", "Nombre de la tarea"),
                 ("currTask_DS", "Nombre de tarea actual"),
                 ("currPhase_DS", "Nombre de fase actual"),
                 ("DATE", "Fecha de alta de la tarea"),
@@ -152,10 +154,10 @@ class NEWPendingTasksTool(XyzTool):
             router_prompt
         )
         try:
-            print(filter)
             filter = loads(filter)
         except:
             filter = {}
+        print("Filtro:", filter)
 
         tasks = [self._reassign_concept_and_metadata(task) for task in tasks]
         tasks = [self._parse_task(task) for task in tasks]
@@ -259,7 +261,7 @@ class NEWPendingTasksTool(XyzTool):
         # Filter tasks
         tasks = []
         for task in all_tasks:
-            if self._compare(task["PROCESO_DS"], concept_name):
+            if self._compare(task["processDs"], concept_name):
                 tasks.append(task)
 
         return tasks
@@ -318,10 +320,10 @@ class NEWPendingTasksTool(XyzTool):
                         task_idx = row_idx * num_columns + col_idx
                         if task_idx < len(tasks):
                             task = tasks[task_idx]
-                            id = task["EJECUCION_ID"]
-                            name = task["TAREA_DS"]
-                            link = task["EXTERNAL_LINK_DS"]
-                            exec_id = task["EJECUCION_TAREA_ID"]
+                            # id = task["EJECUCION_ID"]
+                            name = task["taskDs"]
+                            link = task["externalLinkDs"]
+                            exec_id = task["taskExecutionId"]
                             with cols[col_idx]:
                                 self._display_task(exec_id, name, link)
         else:
@@ -332,11 +334,9 @@ class NEWPendingTasksTool(XyzTool):
         assert external_link_url is not None, "EXTERNAL_LINK_URL is not set"
         full_link = external_link_url + link
 
-        col1, col2 = st.columns([1, 5])
+        col1, col2 = st.columns([5, 1])
         uuid = uuid4()
         with col1:
-            st.markdown(f"[:material/link:]({full_link})")
-        with col2:
             st.button(
                 key=f"{uuid}@{self.message_id}@prompt_view_task_{task_exec_id}",
                 label=name,
@@ -344,6 +344,8 @@ class NEWPendingTasksTool(XyzTool):
                 args=(task_exec_id, name),
                 use_container_width=True,
             )
+        with col2:
+            st.markdown(f"[:material/link:]({full_link})")
 
     def _view_task_callback(self, task_id: str, name: str) -> None:
         from Actions import ask_shallow_question
@@ -416,5 +418,5 @@ class NEWPendingTasksTool(XyzTool):
     def _get_all_concepts(self, tasks: list[dict]) -> set[str]:
         res = set()
         for task in tasks:
-            res.add(task["PROCESO_DS"])
+            res.add(task["processDs"])
         return res

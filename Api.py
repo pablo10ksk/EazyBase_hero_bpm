@@ -27,7 +27,7 @@ class Api:
             url=self._get_endpoint("GetPendingTasks_v2"),
             json={
                 "token": self._get_token(),
-                "userId": self._get_user_code(),
+                "USR_CD": self._get_user_code(),
                 "userTasksFl": "true",
                 "groupsTasksFl": "true",
                 "pendingTaskId": "",
@@ -37,7 +37,7 @@ class Api:
             headers=self.headers,
         ).json()
         for task in tasks:
-            task["DATE"] = Utils.try_parse_date(task["TAREA_DT"])
+            task["DATE"] = Utils.try_parse_date(task["taskDt"])
         return tasks
 
     def get_reassign_names(self, input: str):
@@ -73,11 +73,19 @@ class Api:
             url=self._get_endpoint("GetMetadataProcess"),
             json={
                 "token": self._get_token(),
-                "cptoBaseCd": task["CONCEPTOBASE_CD"],
-                "cptoBaseId": task["CONCEPTOBASE_ID"],
+                "cptoBaseCd": task["baseConceptCd"],
+                "cptoBaseId": task["baseConceptId"],
             },
             headers=self.headers,
         )
+        # FIXME:
+        return {
+            "inicio_DT": "",
+            "proc_CS": "",
+            "version_CD": "",
+            "currTask_DS": "",
+            "currPhase_DS": "",
+        }
         res = res.json()[0]
 
         return {
@@ -95,8 +103,8 @@ class Api:
                 json={
                     "token": self._get_token(),
                     "mapData": {
-                        "CONCEPTOBASE_CD": task["CONCEPTOBASE_CD"],
-                        "CONCEPTOBASE_ID": task["CONCEPTOBASE_ID"],
+                        "CONCEPTOBASE_CD": task["baseConceptCd"],
+                        "CONCEPTOBASE_ID": task["baseConceptId"],
                     },
                 },
                 headers=self.headers,
@@ -119,8 +127,8 @@ class Api:
             url=self._get_endpoint("GetHistExecBPM"),
             json={
                 "token": self._get_token(),
-                "cptoCd": task["CONCEPTOBASE_CD"],
-                "cptoId": task["CONCEPTOBASE_ID"],
+                "cptoCd": task["baseConceptCd"],
+                "cptoId": task["baseConceptId"],
                 "procId": task["procId"],
             },
             headers=self.headers,

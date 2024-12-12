@@ -123,7 +123,7 @@ class OldPendingTasksTool(XyzTool):
         # for task in tasks:
         #     id = task["EJECUCION_ID"]
         #     name = task["TAREA_DS"]
-        #     link = task["EXTERNAL_LINK_DS"]
+        #     link = task["externalLinkDs"]
         #     date = task["TAREA_DT"]
         #     self._display_task(id, name, link, date)
 
@@ -140,7 +140,7 @@ class OldPendingTasksTool(XyzTool):
                         task = tasks[task_idx]
                         id = task["EJECUCION_ID"]
                         name = task["TAREA_DS"]
-                        link = task["EXTERNAL_LINK_DS"]
+                        link = task["externalLinkDs"]
                         with cols[col_idx]:
                             self._display_task(id, name, link)
 

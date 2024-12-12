@@ -34,7 +34,7 @@ class PendingTaskTool(XyzTool):
         metadata = st.session_state.api.get_metadata_from_task(task)
         concept, basedata = st.session_state.api.get_concept_from_task(task)
         historial = st.session_state.api.get_historial_from_task(task)
-        link = task["EXTERNAL_LINK_DS"]
+        link = task["externalLinkDs"]
 
         return {
             "task": task,
@@ -48,15 +48,17 @@ class PendingTaskTool(XyzTool):
 
     def text(self, data: dict) -> str:
         task = data["task"]
-        tarea_ds = task["TAREA_DS"]
+        tarea_ds = task["taskDs"]
         # ejecucion_id = task["EJECUCION_ID"]
-        etapa_ds = task["ETAPA_DS"]
-        proceso_ds = task["PROCESO_DS"]
+        # FIXME: recuperar etapa_DS
+        etapa_ds = "TODO ETAPA DS"
+        # etapa_ds = task["ETAPA_DS"]
+        processDs = task["processDs"]
 
         res = f"**Tarea '{tarea_ds}'**\n\n"
         # res += f"- **ID de tarea**: {ejecucion_id}\n"
         res += f"- **Etapa**: {etapa_ds}\n"
-        res += f"- **Proceso**: {proceso_ds}\n"
+        res += f"- **Proceso**: {processDs}\n"
         return res
 
     def render(self, text: str, payload: dict) -> None:
@@ -164,6 +166,6 @@ class PendingTaskTool(XyzTool):
     def _get_task_by_id(self, task_id) -> dict:
         tasks = st.session_state.api.get_pending_tasks()
         for task in tasks:
-            if task["EJECUCION_TAREA_ID"] == task_id:
+            if task["taskExecutionId"] == task_id:
                 return task
         assert False, f"Task with id {task_id} not found"

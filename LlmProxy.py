@@ -147,7 +147,7 @@ class LlmProxy:
             if response_text:
                 response_text = response_text.strip()
                 response_json = loads(response_text)
-                print(response_json)
+                print("Router:", response_json)
                 tool_name = response_json.get("tool")
                 for tool in all_tools:
                     if tool.name == tool_name:

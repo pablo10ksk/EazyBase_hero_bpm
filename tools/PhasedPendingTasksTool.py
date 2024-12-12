@@ -28,12 +28,12 @@ class PhasedPendingTasksTool(XyzTool):
         num_today = 0
 
         for root_value in tasks.values():
-            etapas = root_value["ETAPAS_MAP"]
+            etapas = root_value["stageLst"]
             for etapa in etapas:
-                listado = etapa["TAREA_LST"]
+                listado = etapa["taskLst"]
                 for l in listado:
-                    num_all += int(l["TOTAL_PENDING_NM"])
-                    num_today += int(l["PENDING_TODAY_NM"])
+                    num_all += int(l["totalPendingNm"])
+                    num_today += int(l["pendingTodayNm"])
         return num_all, num_today
 
     def text(self, data: dict) -> str:
@@ -58,23 +58,23 @@ class PhasedPendingTasksTool(XyzTool):
             for col, root_value in zip(cols, task_items[i : i + 2]):
                 with col:
                     sum_totales = 0
-                    etapas = root_value["ETAPAS_MAP"]
+                    etapas = root_value["stageLst"]
                     for etapa in etapas:
-                        listado = etapa["TAREA_LST"]
+                        listado = etapa["taskLst"]
                         for l in listado:
-                            sum_totales += int(l["TOTAL_PENDING_NM"])
+                            sum_totales += int(l["totalPendingNm"])
 
-                    name = root_value["PROCESO_DS"]
+                    name = root_value["processDs"]
                     icon = ":material/package_2:"
                     with st.expander(f"**{name}** :gray[({sum_totales})]", icon=icon):
                         table = " Nombre | Hoy | Total"
                         table += "\n --- | --- | ---"
                         for etapa in etapas:
-                            etapa_name = etapa["ETAPA_DS"]
-                            listado = etapa["TAREA_LST"]
+                            etapa_name = etapa["stageDs"]
+                            listado = etapa["taskLst"]
                             for l in listado:
-                                nombre_l = l["NAME_TAREA_DS"]
-                                today_l = l["PENDING_TODAY_NM"]
-                                total_l = l["TOTAL_PENDING_NM"]
+                                nombre_l = l["taskNameDs"]
+                                today_l = l["pendingTodayNm"]
+                                total_l = l["totalPendingNm"]
                                 table += f"\n:gray[{etapa_name}] / {nombre_l} | {today_l} | {total_l}"
                         st.markdown(table)
