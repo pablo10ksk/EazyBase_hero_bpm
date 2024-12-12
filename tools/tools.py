@@ -4,6 +4,7 @@ from tools.PendingTasksTool import NEWPendingTasksTool
 from tools.PendingTaskTool import PendingTaskTool
 from tools.PhasedPendingTasksTool import PhasedPendingTasksTool
 from tools.QueryPendingTasks import GraphPendingTasksTool
+from tools.VacationsTool import VacationsTool
 from tools.XyzTool import XyzTool
 
 """
@@ -16,6 +17,7 @@ all_tools: list[XyzTool] = [
     PendingTaskTool(),
     MakeTaskDecisionTool(),
     PhasedPendingTasksTool(),
+    VacationsTool(),
 ]
 
 # We add the Summary tool at the end
