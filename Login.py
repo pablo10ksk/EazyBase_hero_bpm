@@ -8,6 +8,7 @@ import requests
 @dataclass
 class Login:
     _token: Optional[str] = None
+    _tokenAgent: Optional[str] = None
     _userId: Optional[str] = None
 
     _user: Optional[str] = None
@@ -18,6 +19,9 @@ class Login:
 
     def get_token(self) -> Optional[str]:
         return self._token
+
+    def get_token_agent(self) -> Optional[str]:
+        return self._tokenAgent
 
     def get_user_id(self) -> Optional[str]:
         return self._userId
@@ -31,14 +35,33 @@ class Login:
         self.renew_token()
 
     def renew_token(self) -> None:
-        login_url = os.getenv("LOGIN_URL")
-        assert login_url is not None, "LOGIN_URL is not set"
-
         assert self._user is not None, "Cannot renew token without user"
         assert self._password is not None, "Cannot renew token without password"
 
+        api_login_url = os.getenv("API_LOGIN_URL")
+        assert api_login_url is not None, "API_LOGIN_URL is not set"
+
+        agent_login_url = os.getenv("AGENT_LOGIN_URL")
+        assert agent_login_url is not None, "AGENT_LOGIN_URL is not set"
+
+        api_login = self._login_request(api_login_url, self._user, self._password)
+        agent_login = self._login_request(agent_login_url, self._user, self._password)
+
+        if api_login is None or agent_login is None:
+            self.logout()
+            return
+        api_token, cd = api_login
+        agent_token, _ = agent_login
+
+        self._token = api_token
+        self._tokenAgent = agent_token
+        self._userId = cd
+
+    def _login_request(
+        self, url: str, user: str, password: str
+    ) -> Optional[tuple[str, str]]:
         response = requests.get(
-            url=login_url,
+            url=url,
             json={
                 "loginDs": self._user,
                 "pwdCd": self._password,
@@ -51,11 +74,11 @@ class Login:
             json = response.json()
             token = json["TOKEN_CD"]
             user_id = json["USR_CD"]
-            self._token = token
-            self._userId = user_id
+            return (token, user_id)
         except:
-            self.logout()
+            return None
 
     def logout(self) -> None:
         self._token = None
+        self._tokenAgent = None
         self._userId = None

@@ -15,5 +15,8 @@ class Historial:
     def get_last_messages(self) -> list[Message]:
         return self._messages[-self.HISTORIAL_CUTOFF :]
 
+    def get_last_messages_except_last(self) -> list[Message]:
+        return self._messages[-self.HISTORIAL_CUTOFF : -1]
+
     def get_last_message(self) -> Optional[Message]:
         return self._messages[-1]
