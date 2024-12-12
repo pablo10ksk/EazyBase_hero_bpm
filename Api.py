@@ -14,7 +14,7 @@ class Api:
 
     def get_all_tasks_phased(self) -> dict:
         return requests.get(
-            url=self._get_endpoint("GetPendingTasksPhased"),
+            url=self._get_endpoint("GetPendingTasksPhased_v2"),
             json={
                 "token": self._get_token(),
                 "USR_CD": self._get_user_code(),
@@ -24,7 +24,7 @@ class Api:
 
     def get_pending_tasks(self) -> dict:
         tasks = requests.get(
-            url=self._get_endpoint("GetPendingTasks"),
+            url=self._get_endpoint("GetPendingTasks_v2"),
             json={
                 "token": self._get_token(),
                 "userId": self._get_user_code(),
@@ -32,6 +32,7 @@ class Api:
                 "groupsTasksFl": "true",
                 "pendingTaskId": "",
                 "locatorDs": "",
+                "mapData": {"addcpt": True},
             },
             headers=self.headers,
         ).json()

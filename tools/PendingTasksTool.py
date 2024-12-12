@@ -59,11 +59,15 @@ class NEWPendingTasksTool(XyzTool):
         )
 
         last_basedata = None
+        # TODO: By pablo check
         if concept_name is not None:
             for task in tasks:
-                task["concept"], basedata = st.session_state.api.get_concept_from_task(
-                    task
-                )
+                jsoncpt = loads(task["objectdata"])
+                task["concept"] = jsoncpt["attributes"]
+                basedata = jsoncpt["basedata"]
+                # task["concept"], basedata = st.session_state.api.get_concept_from_task(
+                #    task
+                # )
                 task["metadata"] = st.session_state.api.get_metadata_from_task(task)
                 if basedata:
                     last_basedata = basedata
