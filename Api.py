@@ -40,6 +40,24 @@ class Api:
             task["DATE"] = Utils.try_parse_date(task["taskDt"])
         return tasks
 
+    def get_pending_task(self, taskId: str) -> dict:
+        tasks = requests.get(
+            url=self._get_endpoint("GetPendingTasks_v2"),
+            json={
+                "token": self._get_token(),
+                "USR_CD": self._get_user_code(),
+                "userTasksFl": "true",
+                "groupsTasksFl": "true",
+                "pendingTaskId": taskId,
+                "locatorDs": "",
+                "mapData": {"addcpt": True},
+            },
+            headers=self.headers,
+        ).json()
+        for task in tasks:
+            task["DATE"] = Utils.try_parse_date(task["taskDt"])
+        return tasks
+
     def get_reassign_names(self, input: str):
         if not input.strip():
             return []
@@ -141,6 +159,20 @@ class Api:
             json={
                 "token": self._get_token(),
                 "taskExecId": task_id,
+            },
+            headers=self.headers,
+        )
+        return res.json()
+
+    def do_keen_magic(self):
+        res = requests.get(
+            url=self._get_endpoint("doKeenMagic"),
+            json={
+                "token": self._get_token(),
+                "mapData": {
+                    "ACTION": "getcontentcreate",
+                    "TIPO_CD": "115",
+                },
             },
             headers=self.headers,
         )

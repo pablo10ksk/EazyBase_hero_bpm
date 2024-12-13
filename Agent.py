@@ -26,10 +26,7 @@ class Agent:
                 "mapData": {
                     "agent": "router",
                     "args": {
-                        "texts": prompt,
-                        "response_format": {
-                            "type": "json_object",
-                        },
+                        "prompt": prompt,
                         "messages": historial,
                     },
                 },
@@ -39,6 +36,7 @@ class Agent:
             },
         )
         res = raw_response.json()
+        print("Router:", res)
         response = res["return_execution"]["response"]
 
         if isinstance(response, str):

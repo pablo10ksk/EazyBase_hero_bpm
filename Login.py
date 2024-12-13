@@ -45,9 +45,14 @@ class Login:
         assert agent_login_url is not None, "AGENT_LOGIN_URL is not set"
 
         api_login = self._login_request(api_login_url, self._user, self._password)
-        agent_login = self._login_request(agent_login_url, self._user, self._password)
+        # FIXME: recuperar original
+        # agent_login = self._login_request(agent_login_url, self._user, self._password)
+        agent_login = self._login_request(agent_login_url, "paint", "a)2921C9FI")
 
         if api_login is None or agent_login is None:
+            print(
+                f"Api_login {"is " if api_login is None else "is not "}None, Agent_login {"is " if agent_login is None else "is not "}None"
+            )
             self.logout()
             return
         api_token, cd = api_login
@@ -63,8 +68,8 @@ class Login:
         response = requests.get(
             url=url,
             json={
-                "loginDs": self._user,
-                "pwdCd": self._password,
+                "loginDs": user,
+                "pwdCd": password,
             },
             headers={
                 "Content-Type": "application/json",
@@ -75,7 +80,7 @@ class Login:
             token = json["TOKEN_CD"]
             user_id = json["USR_CD"]
             return (token, user_id)
-        except:
+        except Exception as e:
             return None
 
     def logout(self) -> None:

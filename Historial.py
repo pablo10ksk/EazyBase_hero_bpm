@@ -1,22 +1,20 @@
+from dataclasses import dataclass, field
 from typing import Optional
 
 from Message import Message
 
 
+@dataclass
 class Historial:
     HISTORIAL_CUTOFF = 20
-
-    def __init__(self):
-        self._messages: list[Message] = []
+    _messages: list[Message] = field(default_factory=list)
 
     def add_message(self, m: Message) -> None:
         self._messages.append(m)
 
-    def get_last_messages(self) -> list[Message]:
-        return self._messages[-self.HISTORIAL_CUTOFF :]
-
-    def get_last_messages_except_last(self) -> list[Message]:
-        return self._messages[-self.HISTORIAL_CUTOFF : -1]
-
     def get_last_message(self) -> Optional[Message]:
         return self._messages[-1]
+
+    def get_last_messages_except_last(self) -> list[dict]:
+        res = self._messages[-self.HISTORIAL_CUTOFF : -1]
+        return [{"role": m.role, "content": m.text} for m in res]

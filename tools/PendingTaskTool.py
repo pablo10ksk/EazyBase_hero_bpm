@@ -49,17 +49,9 @@ class PendingTaskTool(XyzTool):
     def text(self, data: dict) -> str:
         task = data["task"]
         tarea_ds = task["taskDs"]
-        # ejecucion_id = task["EJECUCION_ID"]
-        # FIXME: recuperar etapa_DS
-        etapa_ds = "TODO ETAPA DS"
-        # etapa_ds = task["ETAPA_DS"]
         processDs = task["processDs"]
 
-        res = f"**Tarea '{tarea_ds}'**\n\n"
-        # res += f"- **ID de tarea**: {ejecucion_id}\n"
-        res += f"- **Etapa**: {etapa_ds}\n"
-        res += f"- **Proceso**: {processDs}\n"
-        return res
+        return f"**Tarea {tarea_ds}** ({processDs})\n\n"
 
     def render(self, text: str, payload: dict) -> None:
         options = payload["options"]
@@ -77,7 +69,9 @@ class PendingTaskTool(XyzTool):
             assert external_link_url is not None, "EXTERNAL_LINK_URL is not set"
             full_link = external_link_url + link
             st.link_button("Abrir en GENESIS", url=full_link, icon=":material/link:")
-        self._render_historial(historial)
+
+        # FIXME: recuperar historial y metadatos
+        # self._render_historial(historial)
 
         with st.expander("**Concepto**", icon="🏷️", expanded=True):
             self._render_concept(concept, basedata)
@@ -85,8 +79,8 @@ class PendingTaskTool(XyzTool):
         with st.expander("**Toma de decisión**", icon="🔀", expanded=True):
             self._render_options(options)
 
-        with st.expander("**Metadatos**", icon="📋"):
-            grid(metadata)
+        # with st.expander("**Metadatos**", icon="📋"):
+        #     grid(metadata)
 
     def _render_concept(self, concept: dict, basedata: list[tuple[str, str]]) -> None:
         if basedata:
@@ -164,8 +158,7 @@ class PendingTaskTool(XyzTool):
                     )
 
     def _get_task_by_id(self, task_id) -> dict:
-        tasks = st.session_state.api.get_pending_tasks()
-        for task in tasks:
-            if task["taskExecutionId"] == task_id:
-                return task
-        assert False, f"Task with id {task_id} not found"
+        tasks = st.session_state.api.get_pending_task(task_id)
+        assert tasks, f"No se encontró ninguna tarea con el id {task_id}"
+        assert len(tasks) == 1, f"Se encontraron múltiples tareas con el id {task_id}"
+        return tasks[0]

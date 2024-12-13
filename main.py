@@ -20,6 +20,8 @@ styles()
 
 header()
 
+# st.session_state
+
 if "client" not in st.session_state:
     st.session_state.login = Login()
     st.session_state.client = LlmProxy(login=st.session_state.login)
