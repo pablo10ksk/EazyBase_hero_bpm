@@ -28,3 +28,15 @@ class Utils:
 
         # If all parsing fails, return the original string
         return s
+
+    @staticmethod
+    def join_spanish(l: list[str]) -> str:
+        """Une una lista con comas excepto el último que va con un 'y'"""
+        if len(l) == 0:
+            return ""
+        elif len(l) == 1:
+            return l[0]
+        elif len(l) == 2:
+            return l[0] + " y " + l[1]
+        else:
+            return ", ".join(l[:-1]) + " y " + l[-1]

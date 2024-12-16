@@ -5,7 +5,7 @@ import streamlit as st
 from tools.XyzTool import XyzTool
 
 
-class VacationsTool(XyzTool):
+class VacationsToolOld(XyzTool):
     def __init__(self):
         super().__init__(
             name="vacations",

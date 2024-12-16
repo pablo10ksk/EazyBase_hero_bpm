@@ -178,32 +178,10 @@ class Api:
         )
         return res.json()
 
-    def insert_into_kbase(self, company_owner, mapdata, metadata: dict):
-        url = os.getenv("EAZYBASE_URL")
-        assert url is not None, "EAZYBASE_URL is not set"
-
-        response = requests.post(
-            url=url,
-            json={
-                "token": self._get_token(),
-                "mapData": {
-                    "clientowner_cd": company_owner,
-                    "companyowner_id": company_owner,
-                    "kbasefather_cd": mapdata["kbasefather_cd"],
-                    "hasprocess_fl": "0",
-                    "kbasename_cd": mapdata["kbasename_cd"],
-                    "kbasedescription_ds": mapdata["kbasedescription_ds"],
-                    "kbasename_ds": mapdata["kbasename_ds"],
-                    "hasoutcome_cd": "0",
-                    "hasrequirements_cd": "0",
-                    "process_id": "",
-                    "alert_to_ds": "",
-                    "metadata_": metadata,
-                },
-            },
-            headers=self.headers,
-        ).json()
-        return response["insertObject"]
+    def get_tesis_types(self):
+        return [
+            {"name": "vacaciones"},
+        ]
 
     def _get_endpoint(self, slug: str):
         endpoint = os.getenv("API_ENDPOINT")
