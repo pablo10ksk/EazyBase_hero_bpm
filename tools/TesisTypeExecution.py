@@ -5,7 +5,7 @@ from tools.SimpleXyzTool import SimpleXyzTool
 
 
 class TesisTypeExecutionInput(BaseModel):
-    type_name: str
+    type_cd: str
     args: dict
 
 
@@ -22,7 +22,11 @@ class TesisTypeExecutionTool(SimpleXyzTool):
         )
 
     def run(self, prompt: str) -> dict:
-        return {}
+        res = st.session_state.api.insert_magic(
+            tipo_num=115,
+            args=self.input.args,
+        )
+        return res
 
     def text(self, data: dict) -> str:
-        return str(self.input.model_dump())
+        return data["data"]

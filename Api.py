@@ -1,4 +1,5 @@
 import os
+import re
 from urllib.parse import urljoin
 
 import requests
@@ -13,14 +14,15 @@ class Api:
         self.headers = {"Content-Type": "application/json"}
 
     def get_all_tasks_phased(self) -> dict:
-        return requests.get(
+        res = requests.get(
             url=self._get_endpoint("GetPendingTasksPhased_v2"),
             json={
                 "token": self._get_token(),
                 "USR_CD": self._get_user_code(),
             },
             headers=self.headers,
-        ).json()
+        )
+        return res.json()
 
     def get_pending_tasks(self) -> dict:
         tasks = requests.get(
@@ -72,7 +74,7 @@ class Api:
 
     def make_decision(self, task_id: str, option_code: str):
         response = requests.get(
-            url=self._get_endpoint("MakeDecision"),
+            url=self._get_endpoint_simple("MakeDecision"),
             json={
                 "token": self._get_token(),
                 "ejecTareaId": task_id,
@@ -142,7 +144,7 @@ class Api:
 
     def get_historial_from_task(self, task: dict) -> list:
         res = requests.get(
-            url=self._get_endpoint("GetHistExecBPM"),
+            url=self._get_endpoint_simple("GetHistExecBPM"),
             json={
                 "token": self._get_token(),
                 "cptoCd": task["baseConceptCd"],
@@ -155,7 +157,7 @@ class Api:
 
     def get_task_options(self, task_id: str) -> dict:
         res = requests.get(
-            url=self._get_endpoint("GetTaskOptionsAdvance"),
+            url=self._get_endpoint_simple("GetTaskOptionsAdvance"),
             json={
                 "token": self._get_token(),
                 "taskExecId": task_id,
@@ -164,14 +166,46 @@ class Api:
         )
         return res.json()
 
-    def do_keen_magic(self):
+    def do_keen_magic(self, tipo_num: int):
         res = requests.get(
             url=self._get_endpoint("doKeenMagic"),
             json={
                 "token": self._get_token(),
                 "mapData": {
                     "ACTION": "getcontentcreate",
-                    "TIPO_CD": "115",
+                    "TIPO_CD": tipo_num,
+                },
+            },
+            headers=self.headers,
+        )
+        return res.json()
+
+    def insert_magic(self, tipo_num: int, args: dict):
+        descri = args
+        descri["TITULO_DS"] = "Test"
+
+        # Itera sobre todos los key, y si el valor
+        # tiene la forma AAAA-MM-DD, transfórmalo a AAAAMMDDHHMMSS
+        for key in descri:
+            value = descri[key]
+            if re.match(r"\d{4}-\d{2}-\d{2}", value):
+                descri[key] = value.replace("-", "") + "000000"
+
+        res = requests.get(
+            url=self._get_endpoint("doKeenMagic"),
+            json={
+                "token": self._get_token(),
+                "mapData": {
+                    "ACTION": "insertcatalog",
+                    "TIPO_CD": tipo_num,  # 115
+                    "TAG_CD": "SOLIC_VACACIONES",
+                    "DESCRI": descri,
+                    # {
+                    #     # "INICIO_DT": "20241215000000",
+                    #     # "FIN_DT": "20241216000000",
+                    #     # "MOTIVO_CD": "Vacaciones",
+                    #     "TITULO_DS": "Test",
+                    # },
                 },
             },
             headers=self.headers,
@@ -180,13 +214,19 @@ class Api:
 
     def get_tesis_types(self):
         return [
-            {"name": "vacaciones"},
+            {"name": "Vacaciones"},
+            {"name": "Anticipo de nómina"},
         ]
 
     def _get_endpoint(self, slug: str):
         endpoint = os.getenv("API_ENDPOINT")
         assert endpoint is not None, "API_ENDPOINT is not set"
-        return urljoin(endpoint, slug)
+        return urljoin(endpoint + "ibpmev2/", slug)
+
+    def _get_endpoint_simple(self, slug: str):
+        endpoint = os.getenv("API_ENDPOINT")
+        assert endpoint is not None, "API_ENDPOINT is not set"
+        return urljoin(endpoint + "ibpme/", slug)
 
     def _get_token(self):
         return self.login.get_token()

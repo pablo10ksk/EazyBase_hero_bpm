@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from json import loads
 from uuid import uuid4
 
 import streamlit as st
@@ -31,8 +32,15 @@ class PendingTaskTool(XyzTool):
         task_id = self.input.task_id
         options = st.session_state.api.get_task_options(task_id)
         task = self._get_task_by_id(task_id)
+
+        objectdata = loads(task["objectdata"])
+        attributes = objectdata["attributes"]
+        basedata = objectdata["basedata"]
+        basedata = list(basedata.items())
+        basedata = [x for x in basedata if not x[0].endswith("_DT")]
+
         metadata = st.session_state.api.get_metadata_from_task(task)
-        concept, basedata = st.session_state.api.get_concept_from_task(task)
+        # concept, basedata = st.session_state.api.get_concept_from_task(task)
         historial = st.session_state.api.get_historial_from_task(task)
         link = task["externalLinkDs"]
 
@@ -40,7 +48,7 @@ class PendingTaskTool(XyzTool):
             "task": task,
             "options": options,
             "metadata": metadata,
-            "concept": concept,
+            "concept": attributes,
             "basedata": basedata,
             "historial": historial,
             "link": link,
@@ -71,7 +79,7 @@ class PendingTaskTool(XyzTool):
             st.link_button("Abrir en GENESIS", url=full_link, icon=":material/link:")
 
         # FIXME: recuperar historial y metadatos
-        # self._render_historial(historial)
+        self._render_historial(historial)
 
         with st.expander("**Concepto**", icon="🏷️", expanded=True):
             self._render_concept(concept, basedata)
@@ -79,8 +87,8 @@ class PendingTaskTool(XyzTool):
         with st.expander("**Toma de decisión**", icon="🔀", expanded=True):
             self._render_options(options)
 
-        # with st.expander("**Metadatos**", icon="📋"):
-        #     grid(metadata)
+        with st.expander("**Metadatos**", icon="📋"):
+            grid(metadata)
 
     def _render_concept(self, concept: dict, basedata: list[tuple[str, str]]) -> None:
         if basedata:

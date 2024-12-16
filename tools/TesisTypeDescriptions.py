@@ -21,8 +21,8 @@ class TesisTypeDescriptionsTool(SimpleXyzTool):
             human_description="Por ejemplo, saber qué hace falta para dar de alta un periodo de vacaciones",
             example_questions=[
                 ExampleQuestion(
-                    label="Campos vacaciones",
-                    prompt="Quiero saber más sobre la acción de alta de vacaciones en 'Tesis'",
+                    label="Pedir vacaciones",
+                    prompt="Explícame qué valores tengo que aportar para dar de alta Vacaciones en Tesis",
                     icon="🏖️",
                 )
             ],
@@ -30,15 +30,31 @@ class TesisTypeDescriptionsTool(SimpleXyzTool):
         )
 
     def run(self, prompt: str) -> dict:
-        return st.session_state.api.do_keen_magic()
+        # Vacaciones
+        if "ciones" in self.input.type_name:
+            num = 115
+            tipo = "Vacaciones"
+        else:
+            num = 120
+            tipo = "Anticipo de nómina"
+        res = st.session_state.api.do_keen_magic(num)
+        res["tipo"] = tipo
+        return res
 
     def text(self, data: dict) -> str:
-        tipo = "vacaciones"
-        res = f"Puedes dar de alta **{tipo}** en Tesis:\n"
+        tipo = data["tipo"]
+        res = f"Para dar de alta **{tipo}** en Tesis, tienes que darme estos datos:\n"
         for field in data["data"]:
             res += f"- **{field['title']}**"
             if field["options"]:
                 options = field["options"]
+
+                def clean_option(opt):
+                    if "$" in opt:
+                        return opt.split("$")[1]
+                    return opt
+
+                options = [clean_option(opt) for opt in options]
                 options = [f":gray[{opt}]" for opt in options]
                 if len(options) > 6:
                     res += "\n\n"
@@ -51,5 +67,4 @@ class TesisTypeDescriptionsTool(SimpleXyzTool):
                 else:
                     res += ", con posibles valores: " + Utils.join_spanish(options)
             res += "\n"
-        print(res)
         return res
