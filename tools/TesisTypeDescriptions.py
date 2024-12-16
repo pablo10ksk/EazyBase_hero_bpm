@@ -65,6 +65,7 @@ class TesisTypeDescriptionsTool(SimpleXyzTool):
                         row_options = options[i * 4 : (i + 1) * 4]
                         res += "\t| " + " | ".join(row_options) + " |\n"
                 else:
-                    res += ", con posibles valores: " + Utils.join_spanish(options)
+                    options_united = Utils.join_spanish(options)
+                    res += f", con posibles valores: {options_united}."
             res += "\n"
         return res
