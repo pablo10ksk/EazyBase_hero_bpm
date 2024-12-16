@@ -31,8 +31,8 @@ class NEWPendingTasksTool(XyzTool):
                     "Tareas pendientes",
                 ),
                 ExampleQuestion(
-                    "Muéstrame las tareas de 'Bpm de Proyecto'",
-                    "Tareas de tipo",
+                    "Muéstrame las tareas de 'Proceso de Gestión Externa'",
+                    "Tareas de un tipo",
                 ),
             ],
             schema=PendingTasksInput,

@@ -9,6 +9,15 @@ class Historial:
     HISTORIAL_CUTOFF = 20
     _messages: list[Message] = field(default_factory=list)
 
+    def __post_init__(self):
+        # self._messages.append(
+        #     Message(
+        #         role="assistant",
+        #         text="Soy un asistente llamado Juan Pedro que resuelve tareas pendientes.",
+        #     )
+        # )
+        pass
+
     def add_message(self, m: Message) -> None:
         self._messages.append(m)
 

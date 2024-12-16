@@ -9,7 +9,7 @@ def header():
     if "example_questions" not in st.session_state:
         st.session_state.example_questions = []
 
-    col1, col2 = st.columns([6, 5])
+    col1, col2 = st.columns([5, 5])
     with col1:
         st.title(chatbot.fancy_name)
         st.caption(chatbot.description)
@@ -31,10 +31,10 @@ def header():
                     }
                 )
 
-                if idx % 2 == 0:  # Create new columns every 2 buttons
-                    cols = st.columns(2)
+                if idx % 3 == 0:  # Create new columns every 2 buttons
+                    cols = st.columns(3)
 
-                col_idx = idx % 2  # Alternate between the two columns
+                col_idx = idx % 3  # Alternate between the two columns
                 with cols[col_idx]:
                     st.button(
                         label=question.label,
