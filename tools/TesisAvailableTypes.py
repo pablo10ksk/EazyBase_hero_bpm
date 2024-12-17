@@ -16,7 +16,7 @@ class TesisAvailableTypesTool(SimpleXyzTool):
                 ExampleQuestion(
                     label="Alta de tipos en Tesis",
                     prompt="Dime qué puedo dar de alta en Tesis",
-                    icon="🗺",
+                    icon="🌐",
                 )
             ],
         )

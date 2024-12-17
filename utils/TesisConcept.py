@@ -16,24 +16,26 @@ class TesisConcept:
                     return opt
 
                 options = [clean_option(opt) for opt in options]
-                # options = [f":gray[{opt}]" for opt in options]
-                sum_of_length_options = sum([len(opt) for opt in options])
-
-                # En vez de mirar el número de opciones, miramos si
-                # la suma de longitud de opciones es lo suficientemente grande
-                # if len(options) > 6:
-                # if sum_of_length_options > 500:
-                # De momento, no hacerlo nunca
-                if False:
-                    res += "\n\n"
-                    res += "\t| | | | |\n"
-                    res += "\t|---|---|---|---|\n"
-                    num_rows = (len(options) + 3) // 4
-                    for i in range(num_rows):
-                        row_options = options[i * 4 : (i + 1) * 4]
-                        res += "\t| " + " | ".join(row_options) + " |\n"
-                else:
-                    options_united = Utils.join_spanish(options)
-                    res += f", con posibles valores: {options_united}."
+                options = [f"'{opt}'" for opt in options]
+                options_united = Utils.join_spanish(options)
+                res += f", con posibles valores: {options_united}."
+            else:
+                res += "."
             res += "\n"
+        return res
+
+    @staticmethod
+    def get_mapping(data: dict) -> str:
+        res = "I need you to perform the following mapping for each key of the dictionary:"
+        for field in data:
+            res += f"\n- **{field['title']}** must become **{field['tag']}**: "
+            if field["options"]:
+                res += "map the values in the following way: "
+                options = field["options"]
+                for opt in options:
+                    assert "$" in opt, f"Option has no dollar sign: {opt}"
+                    key, text = opt.split("$")
+                    res += f"\n\t- '{text}' -> {key}"
+            else:
+                res += "leave it as is."
         return res

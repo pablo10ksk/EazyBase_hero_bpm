@@ -28,13 +28,34 @@ class TesisTypeExecutionTool(SimpleXyzTool):
 
     def run(self, prompt: str) -> dict:
         is_error = self.input.error_data == 1
+        fields = st.session_state.api.do_keen_magic(self.input.type_cd)
+
         if is_error:
             res = self.input.missing_data
-            fields = st.session_state.api.do_keen_magic(self.input.type_cd)
         else:
+            estructura = TesisConcept.get_mapping(fields["data"])
+            print(estructura)
+            # Quiero dar de alta un anticipo de nómina de 800 euros en a coruña en el departamento general
+            new_prompt = f"""
+            El usuario ha mandado este formulario de esta manera
+            -----
+            {str(self.input.args)}
+            -----
+
+            Sin embargo la estructura que me hace falta es 
+            -----
+            {estructura}
+            """
+            corrected_args = st.session_state.agent._run_router(
+                "tesis_structure_execution",
+                new_prompt,
+                [],
+            )
+            print("Corrected args:", corrected_args)
+            corrected_args = corrected_args["return_execution"]["response"]
             res = st.session_state.api.insert_magic(
                 tipo_num=self.input.type_cd,
-                args=self.input.args,
+                args=corrected_args,
             )
 
         return {

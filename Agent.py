@@ -1,8 +1,7 @@
 import os
+from datetime import datetime
 from typing import Optional, Tuple
 from urllib.parse import urljoin
-from datetime import datetime
-
 
 import requests
 
@@ -11,6 +10,8 @@ from tools.XyzTool import XyzTool
 
 
 class Agent:
+    MAIN_ROUTER = "router"
+
     def __init__(self, login: Login):
         self.login = login
         self.headers = {"Content-Type": "application/json"}
@@ -21,25 +22,7 @@ class Agent:
         all_tools: list[XyzTool],
         historial: list[dict],
     ) -> Tuple[Optional[XyzTool], dict | str]:
-        today = datetime.today().date()
-        raw_response = requests.get(
-            url=self._get_endpoint(),
-            json={
-                "token": self._get_token(),
-                "mapData": {
-                    "agent": "router",
-                    "args": {
-                        "prompt": f"On the date {today.strftime('%Y-%m-%d')}, the user sent us: '{prompt}'",
-                        "messages": historial,
-                    },
-                },
-            },
-            headers={
-                "Content-Type": "application/json",
-            },
-        )
-        res = raw_response.json()
-        print("Router:", res)
+        res = self._run_router(self.MAIN_ROUTER, prompt, historial)
         response = res["return_execution"]["response"]
 
         if isinstance(response, str):
@@ -54,6 +37,36 @@ class Agent:
             return tool, response
         else:
             return None, {}
+
+    def _run_router(
+        self,
+        router_code: str,
+        prompt: str,
+        historial: list[dict],
+        additional_args: dict = {},
+    ) -> dict:
+        today = datetime.today().date()
+        raw_response = requests.get(
+            url=self._get_endpoint(),
+            json={
+                "token": self._get_token(),
+                "mapData": {
+                    "agent": router_code,
+                    "args": {
+                        "prompt": f"On the date {today.strftime('%Y-%m-%d')}, the user sent us: '{prompt}'",
+                        "messages": historial,
+                        **additional_args,
+                    },
+                },
+            },
+            headers={
+                "Content-Type": "application/json",
+            },
+        )
+
+        res = raw_response.json()
+        print(f"Router {router_code}: {res}")
+        return res
 
     def _get_endpoint(self):
         endpoint = os.getenv("AGENT_ENDPOINT")
