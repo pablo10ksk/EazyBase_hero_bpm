@@ -6,6 +6,7 @@ import requests
 
 from Login import Login
 from utils.utils import Utils
+from utils.TesisConcept import TesisConcept
 
 
 class Api:
@@ -190,10 +191,8 @@ class Api:
                 "token": self._get_token(),
                 "mapData": {
                     "ACTION": "insertcatalog",
-                    "TIPO_CD": tipo_num,  # 115
-                    "TAG_CD": (
-                        "SOLIC_VACACIONES" if tipo_num == "115" else "ANTICIPO_NOMINA"
-                    ),  # "SOLIC_VACACIONES",
+                    "TIPO_CD": tipo_num,
+                    "TAG_CD": TesisConcept.get_tag(tipo_num),  # "SOLIC_VACACIONES",
                     "DESCRI": descri,
                     # {
                     #     # "INICIO_DT": "20241215000000",

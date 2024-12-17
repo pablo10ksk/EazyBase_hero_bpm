@@ -39,3 +39,17 @@ class TesisConcept:
             else:
                 res += "leave it as is."
         return res
+
+    def get_name(type_cd: str) -> str:
+        return {
+            "115": "Vacaciones",
+            "120": "Anticipo de nómina",
+            "122": "Autorización de Viaje Internacional",
+        }[type_cd]
+
+    def get_tag(tipo_num: str) -> str:
+        return {
+            "115": "SOLIC_VACACIONES",
+            "120": "ANTICIPO_NOMINA",
+            "122": "AUTORIZACION_VIAJE",
+        }[tipo_num]

@@ -34,9 +34,12 @@ class TesisTypeDescriptionsTool(SimpleXyzTool):
         if "ciones" in self.input.type_name:
             num = 115
             tipo = "Vacaciones"
-        else:
+        elif "nticipo" in self.input.type_name:
             num = 120
             tipo = "Anticipo de nómina"
+        else:
+            num = 122
+            tipo = "Autorización de Viaje Internacional"
         res = st.session_state.api.do_keen_magic(num)
         res["tipo"] = tipo
         return res

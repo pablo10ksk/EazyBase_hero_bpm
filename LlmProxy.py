@@ -29,15 +29,7 @@ class LlmProxy:
         self.login = login
         self.eazybase = EazyBase(login)
 
-    def answer_last_message(self) -> Message:
-        new_id = str(uuid4())
-
-        if not self.login.is_logged_in():
-            return Message(
-                text="Debes iniciar sesión antes de usar este chatbot.",
-                role="assistant",
-            )
-
+    def route_prompt(self):
         last_message = self.historial.get_last_message()
         if not last_message:
             return Message(
@@ -45,11 +37,16 @@ class LlmProxy:
                 role="assistant",
             )
         prompt = last_message.text
-        tool, input = st.session_state.agent.route_prompt(
+        return st.session_state.agent.route_prompt(
             prompt,
             all_tools,
             self.historial.get_last_messages_except_last(),
         )
+
+    def run_tool(self, tool, input):
+        new_id = str(uuid4())
+        last_message = self.historial.get_last_message()
+        prompt = last_message.text
         if tool:
             tool.message_id = new_id
             tool.set_input(input)
@@ -64,6 +61,15 @@ class LlmProxy:
             )
         else:
             return Message(text=input, role="assistant")
+
+    def answer_last_message(self) -> Message:
+        if not self.login.is_logged_in():
+            return Message(
+                text="Debes iniciar sesión antes de usar este chatbot.",
+                role="assistant",
+            )
+        else:
+            return True
 
         # Llamar a eazybase
 

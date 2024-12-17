@@ -21,8 +21,8 @@ class TesisTypeExecutionTool(SimpleXyzTool):
         super().__init__(
             name="tesis_type_execution",
             description="",
-            human_name="Ejecutar una acción en Tesis",
-            human_description="Por ejemplo, dar de alta un periodo de vaaciones",
+            human_name="Ejecutar una acción en ClearNet",
+            human_description="Por ejemplo, dar de alta un periodo de vaciones",
             schema=TesisTypeExecutionInput,
         )
 
@@ -69,9 +69,7 @@ class TesisTypeExecutionTool(SimpleXyzTool):
         res = data["data"]
 
         if is_error:
-            nombre = (
-                "Vacaciones" if self.input.type_cd == "115" else "Anticipo de nómina"
-            )
+            nombre = TesisConcept.get_name(self.input.type_cd)
             fields = TesisConcept.display(nombre, data["fields"]["data"])
             return f"{res}\n\n{fields}"
         else:
