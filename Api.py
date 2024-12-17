@@ -199,7 +199,7 @@ class Api:
                     "ACTION": "insertcatalog",
                     "TIPO_CD": tipo_num,  # 115
                     "TAG_CD": (
-                        "SOLIC_VACACIONES" if tipo_num == 115 else "ANTICIPO_NOMINA"
+                        "SOLIC_VACACIONES" if tipo_num == "115" else "ANTICIPO_NOMINA"
                     ),  # "SOLIC_VACACIONES",
                     "DESCRI": descri,
                     # {
