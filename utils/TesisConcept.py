@@ -22,7 +22,9 @@ class TesisConcept:
                 # En vez de mirar el número de opciones, miramos si
                 # la suma de longitud de opciones es lo suficientemente grande
                 # if len(options) > 6:
-                if sum_of_length_options > 500:
+                # if sum_of_length_options > 500:
+                # De momento, no hacerlo nunca
+                if False:
                     res += "\n\n"
                     res += "\t| | | | |\n"
                     res += "\t|---|---|---|---|\n"

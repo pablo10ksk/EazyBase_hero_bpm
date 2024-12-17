@@ -10,7 +10,7 @@ from utils.TesisConcept import TesisConcept
 class TesisTypeExecutionInput(BaseModel):
     type_cd: str
     missing_data: str | None = None
-    error_data: Literal[0, 1] | None = None
+    error_data: Literal[0, 1]
     args: dict
 
 
