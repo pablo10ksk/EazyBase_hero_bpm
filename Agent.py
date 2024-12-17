@@ -1,6 +1,8 @@
 import os
 from typing import Optional, Tuple
 from urllib.parse import urljoin
+from datetime import datetime
+
 
 import requests
 
@@ -19,6 +21,7 @@ class Agent:
         all_tools: list[XyzTool],
         historial: list[dict],
     ) -> Tuple[Optional[XyzTool], dict | str]:
+        today = datetime.today().date()
         raw_response = requests.get(
             url=self._get_endpoint(),
             json={
@@ -26,7 +29,7 @@ class Agent:
                 "mapData": {
                     "agent": "router",
                     "args": {
-                        "prompt": prompt,
+                        "prompt": f"On the date {today.strftime('%Y-%m-%d')}, the user sent us: '{prompt}'",
                         "messages": historial,
                     },
                 },

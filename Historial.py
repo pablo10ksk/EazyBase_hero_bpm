@@ -26,4 +26,4 @@ class Historial:
 
     def get_last_messages_except_last(self) -> list[dict]:
         res = self._messages[-self.HISTORIAL_CUTOFF : -1]
-        return [{"role": m.role, "content": m.text} for m in res]
+        return [{"role": m.role, "content": str(m.text)} for m in res]
