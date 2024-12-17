@@ -35,8 +35,9 @@ if "ui_initial" not in st.session_state:
     st.session_state.ui_initial = ui_initial
 
 for message in st.session_state.client.historial._messages:
-    with st.chat_message(message.role):
-        message.render()
+    if message.role != "system":
+        with st.chat_message(message.role):
+            message.render()
 
 from Actions import ask_question
 

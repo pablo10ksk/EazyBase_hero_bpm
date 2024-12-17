@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import date
 from typing import Optional
 
 from Message import Message
@@ -10,12 +11,13 @@ class Historial:
     _messages: list[Message] = field(default_factory=list)
 
     def __post_init__(self):
-        # self._messages.append(
-        #     Message(
-        #         role="assistant",
-        #         text="Soy un asistente llamado Juan Pedro que resuelve tareas pendientes.",
-        #     )
-        # )
+        hoy = date.today()
+        self._messages.append(
+            Message(
+                role="system",
+                text=f"For context, today is {hoy.strftime('%Y-%m-%d')}",
+            )
+        )
         pass
 
     def add_message(self, m: Message) -> None:

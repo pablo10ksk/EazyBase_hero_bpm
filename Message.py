@@ -11,7 +11,7 @@ from tools.tools import all_tools
 class Message:
     message_id: str
     text: str
-    role: Literal["user", "assistant"]
+    role: Literal["user", "assistant", "system"]
 
     # This is used when a question is made but we don't
     # really want to show its internal representation
@@ -22,7 +22,7 @@ class Message:
     def __init__(
         self,
         text: str,
-        role: Literal["user", "assistant"],
+        role: Literal["user", "assistant", "system"],
         shallow_text: Optional[str] = None,
         tool_type: Optional[str] = None,
         payload: Optional[dict] = None,

@@ -45,7 +45,7 @@ class Agent:
         historial: list[dict],
         additional_args: dict = {},
     ) -> dict:
-        today = datetime.today().date()
+        # today = datetime.today().date()
         raw_response = requests.get(
             url=self._get_endpoint(),
             json={
@@ -53,7 +53,8 @@ class Agent:
                 "mapData": {
                     "agent": router_code,
                     "args": {
-                        "prompt": f"On the date {today.strftime('%Y-%m-%d')}, the user sent us: '{prompt}'",
+                        # "prompt": f"On the date {today.strftime('%Y-%m-%d')}, the user sent us: '{prompt}'",
+                        "prompt": prompt,
                         "messages": historial,
                         **additional_args,
                     },
