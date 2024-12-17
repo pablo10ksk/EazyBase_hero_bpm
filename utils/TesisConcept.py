@@ -16,7 +16,7 @@ class TesisConcept:
                     return opt
 
                 options = [clean_option(opt) for opt in options]
-                options = [f":gray[{opt}]" for opt in options]
+                # options = [f":gray[{opt}]" for opt in options]
                 sum_of_length_options = sum([len(opt) for opt in options])
 
                 # En vez de mirar el número de opciones, miramos si
