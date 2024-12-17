@@ -2,7 +2,7 @@ import streamlit as st
 
 from tools.ExampleQuestion import ExampleQuestion
 from tools.SimpleXyzTool import SimpleXyzTool
-from tools.utils import Utils
+from utils.utils import Utils
 
 
 class TesisAvailableTypesTool(SimpleXyzTool):
@@ -15,8 +15,8 @@ class TesisAvailableTypesTool(SimpleXyzTool):
             example_questions=[
                 ExampleQuestion(
                     label="Alta de tipos en Tesis",
-                    prompt="Dime qué tipos están disponibles en Tesis",
-                    icon="🌐",
+                    prompt="Dime qué puedo dar de alta en Tesis",
+                    icon="🗺",
                 )
             ],
         )

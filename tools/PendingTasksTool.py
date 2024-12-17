@@ -8,8 +8,8 @@ import streamlit as st
 from pydantic import BaseModel
 
 from tools.ExampleQuestion import ExampleQuestion
-from tools.utils import Utils
 from tools.XyzTool import XyzTool
+from utils.utils import Utils
 
 
 class PendingTasksInput(BaseModel):

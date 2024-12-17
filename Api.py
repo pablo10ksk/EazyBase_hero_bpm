@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 import requests
 
 from Login import Login
-from tools.utils import Utils
+from utils.utils import Utils
 
 
 class Api:
@@ -210,7 +210,7 @@ class Api:
             },
             headers=self.headers,
         )
-        return res.json()
+        return res.json()["data"]
 
     def get_tesis_types(self):
         return [
