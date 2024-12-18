@@ -17,7 +17,7 @@ class TesisTypeDescriptionsTool(SimpleXyzTool):
         super().__init__(
             name="tesis_type_description",
             description="",
-            human_name="Saber más sobre una acción en Tesis",
+            human_name="Saber más sobre una acción en ClearNet",
             human_description="Por ejemplo, saber qué hace falta para dar de alta un periodo de vacaciones",
             example_questions=[
                 ExampleQuestion(

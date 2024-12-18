@@ -4,7 +4,9 @@ from utils.utils import Utils
 class TesisConcept:
     @staticmethod
     def display(tipo: str, data: dict) -> str:
-        res = f"Para dar de alta **{tipo}** en Tesis, tienes que darme estos datos:\n"
+        res = (
+            f"Para dar de alta **{tipo}** en ClearNet, tienes que darme estos datos:\n"
+        )
         for field in data:
             res += f"- **{field['title']}**"
             if field["options"]:
@@ -40,6 +42,7 @@ class TesisConcept:
                 res += "leave it as is."
         return res
 
+    @staticmethod
     def get_name(type_cd: str) -> str:
         return {
             "115": "Vacaciones",
@@ -47,6 +50,7 @@ class TesisConcept:
             "122": "Autorización de Viaje Internacional",
         }[type_cd]
 
+    @staticmethod
     def get_tag(tipo_num: str) -> str:
         return {
             "115": "SOLIC_VACACIONES",

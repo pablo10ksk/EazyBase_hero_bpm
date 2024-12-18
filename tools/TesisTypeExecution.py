@@ -1,3 +1,4 @@
+import re
 from typing import Literal
 
 import streamlit as st
@@ -67,10 +68,14 @@ class TesisTypeExecutionTool(SimpleXyzTool):
     def text(self, data: dict) -> str:
         is_error = data["is_error"]
         res = data["data"]
+        nombre = TesisConcept.get_name(self.input.type_cd)
 
         if is_error:
-            nombre = TesisConcept.get_name(self.input.type_cd)
             fields = TesisConcept.display(nombre, data["fields"]["data"])
             return f"{res}\n\n{fields}"
         else:
-            return str(res)
+            # res = "Se ha insertado el contenido. Ref: '1333127', Cod Externo: ''"
+            # return res
+            ref_num = re.search(r"(\d+)", res).group(1)
+            text = f"Se ha creado un contenido de **{nombre}** en ClearNet con número de referencia **{ref_num}**. Puede consultarlo en la plataforma."
+            return text
