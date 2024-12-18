@@ -41,17 +41,17 @@ def answer() -> None:
     """
     with st.session_state.ui_questions:
         with st.chat_message("assistant"):
-            with st.spinner("Validando credenciales...."):
+            with st.spinner("Validando credenciales..."):
                 credentials = st.session_state.client.answer_last_message()
-            with st.spinner("Estudiando lo que me has pedido...."):
+            with st.spinner("Estudiando lo que me has pedido..."):
                 tool, input = st.session_state.client.route_prompt()
             if hasattr(tool, "human_name"):
                 with st.spinner(
-                    f"Veo que quieres '{tool.human_name}', voy a revisar cómo contestarte. Voy a revisar la documentación, permíteme unos instantes"
+                    f"Veo que quieres '{tool.human_name}'. Voy a revisar la documentación y a decidir cómo contestarte. Permíteme unos instantes..."
                 ):
                     assistant_message = st.session_state.client.run_tool(tool, input)
             else:
-                with st.spinner("Ya entiendo, un instante y te contesto...."):
+                with st.spinner("Ya entiendo. Un instante y te contesto...."):
                     assistant_message = st.session_state.client.run_tool(tool, input)
             assistant_message.render()
             st.session_state.client.historial.add_message(assistant_message)

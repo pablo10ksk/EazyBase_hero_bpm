@@ -22,7 +22,7 @@ class TesisTypeExecutionTool(SimpleXyzTool):
             name="tesis_type_execution",
             description="",
             human_name="Ejecutar una acción en ClearNet",
-            human_description="Por ejemplo, dar de alta un periodo de vaciones",
+            human_description="Por ejemplo, dar de alta un periodo de vacaciones",
             schema=TesisTypeExecutionInput,
         )
 
