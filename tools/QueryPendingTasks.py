@@ -12,7 +12,7 @@ class GraphPendingTasksTool(XyzTool):
         super().__init__(
             name="graph_pending_tasks",
             description="Use this tool when the user wants to plot something about the pending tasks.",
-            human_name="Gráfico de tareas pendientes",
+            human_name="Graficar tareas pendientes",
             human_description="Permite hacer gráficos que dependen de las tareas pendientes",
             example_questions=[
                 ExampleQuestion(

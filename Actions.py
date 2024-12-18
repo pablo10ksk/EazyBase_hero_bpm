@@ -1,5 +1,6 @@
 import streamlit as st
 
+from LlmProxy import LlmProxy
 from Message import Message
 
 
@@ -41,17 +42,33 @@ def answer() -> None:
     """
     with st.session_state.ui_questions:
         with st.chat_message("assistant"):
-            with st.spinner("Validando credenciales..."):
-                credentials = st.session_state.client.answer_last_message()
-            with st.spinner("Estudiando lo que me has pedido..."):
-                tool, input = st.session_state.client.route_prompt()
-            if hasattr(tool, "human_name"):
-                with st.spinner(
-                    f"Veo que quieres '{tool.human_name}'. Voy a revisar la documentación y a decidir cómo contestarte. Permíteme unos instantes..."
-                ):
-                    assistant_message = st.session_state.client.run_tool(tool, input)
-            else:
-                with st.spinner("Ya entiendo. Un instante y te contesto...."):
-                    assistant_message = st.session_state.client.run_tool(tool, input)
+            assistant_message = get_answer()
             assistant_message.render()
             st.session_state.client.historial.add_message(assistant_message)
+
+
+def get_answer() -> Message:
+    """
+    Retrieves an answer from the chatbot based on the user's input.
+
+    Returns:
+        Message: The response message from the chatbot.
+    """
+    client: LlmProxy = st.session_state.client
+    with st.spinner("Validando credenciales..."):
+        if not client.is_logged_in():
+            return Message(
+                text="Debes iniciar sesión antes de usar este chatbot.",
+                role="assistant",
+            )
+
+    with st.spinner("Estudiando lo que me has pedido..."):
+        tool, input = client.route_prompt()
+
+    last_spinner_text = (
+        f"Veo que quieres '{tool.human_name}'. Voy a revisar la documentación y a decidir cómo contestarte. Permíteme unos instantes..."
+        if tool is not None
+        else "Ya entiendo. Un instante y te contesto..."
+    )
+    with st.spinner(last_spinner_text):
+        return client.run_tool(tool, input)

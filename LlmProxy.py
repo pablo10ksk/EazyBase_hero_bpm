@@ -7,6 +7,7 @@ import requests
 import streamlit as st
 from openai import OpenAI
 
+from Agent import Agent
 from EazyBase import EazyBase
 from Historial import Historial
 from Login import Login
@@ -31,21 +32,19 @@ class LlmProxy:
 
     def route_prompt(self):
         last_message = self.historial.get_last_message()
-        if not last_message:
-            return Message(
-                text="No tengo nada a que responder.",
-                role="assistant",
-            )
+        assert last_message is not None, "No messages in the historial"
         prompt = last_message.text
-        return st.session_state.agent.route_prompt(
+        agent: Agent = st.session_state.agent
+        return agent.route_prompt(
             prompt,
             all_tools,
             self.historial.get_last_messages_except_last(),
         )
 
-    def run_tool(self, tool, input):
+    def run_tool(self, tool: Optional[XyzTool], input: dict | str):
         new_id = str(uuid4())
         last_message = self.historial.get_last_message()
+        assert last_message is not None, "No messages in the historial"
         prompt = last_message.text
         if tool:
             tool.message_id = new_id
@@ -60,18 +59,10 @@ class LlmProxy:
                 payload=payload,
             )
         else:
-            return Message(text=input, role="assistant")
+            return Message(text=str(input), role="assistant")
 
-    def answer_last_message(self) -> Message:
-        if not self.login.is_logged_in():
-            return Message(
-                text="Debes iniciar sesión antes de usar este chatbot.",
-                role="assistant",
-            )
-        else:
-            return True
-
-        # Llamar a eazybase
+    def is_logged_in(self) -> bool:
+        return self.login.is_logged_in()
 
     def regular_call_with_prompt_without_history(self, prompt: str) -> Optional[str]:
         response = self.client.chat.completions.create(
