@@ -47,7 +47,7 @@ class Login:
         api_login = self._login_request(api_login_url, self._user, self._password)
         # FIXME: recuperar original
         # agent_login = self._login_request(agent_login_url, self._user, self._password)
-        agent_login = self._login_request(agent_login_url, "paint", "a)2921C9FI")
+        agent_login = self._login_request(agent_login_url, os.getenv("AGENT_USER"), os.getenv("AGENT_PWD"))
 
         if api_login is None or agent_login is None:
             print(

@@ -16,17 +16,17 @@ st.set_page_config(
     page_title=chatbot.title_name,
     layout="wide",
 )
-styles()
-
-header()
-
-# st.session_state
-
 if "client" not in st.session_state:
     st.session_state.login = Login()
     st.session_state.client = LlmProxy(login=st.session_state.login)
     st.session_state.api = Api(login=st.session_state.login)
     st.session_state.agent = Agent(login=st.session_state.login)
+
+styles()
+
+header()
+
+# st.session_state
 
 sidebar()
 
