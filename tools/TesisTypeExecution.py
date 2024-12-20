@@ -28,7 +28,11 @@ class TesisTypeExecutionTool(SimpleXyzTool):
         )
 
     def run(self, prompt: str) -> dict:
-        is_error = self.input.error_data == 1
+        # is_error = self.input.error_data == 1
+        is_error = self.input.error_data == 1 or (
+            self.input.missing_data is not None
+            and self.input.missing_data.strip() != ""
+        )
         fields = st.session_state.api.do_keen_magic(self.input.type_cd)
 
         if is_error:
@@ -72,7 +76,7 @@ class TesisTypeExecutionTool(SimpleXyzTool):
 
         if is_error:
             fields = TesisConcept.display(nombre, data["fields"]["data"])
-            return f"{res}\n\n{fields}"
+            return f"**Me faltan estos datos:** {res}\n\n{fields}"
         else:
             # res = "Se ha insertado el contenido. Ref: '1333127', Cod Externo: ''"
             # return res
