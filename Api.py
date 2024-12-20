@@ -5,8 +5,8 @@ from urllib.parse import urljoin
 import requests
 
 from Login import Login
-from utils.utils import Utils
 from utils.TesisConcept import TesisConcept
+from utils.utils import Utils
 
 
 class Api:
@@ -210,6 +210,7 @@ class Api:
         return [
             {"name": "Vacaciones"},
             {"name": "Anticipo de nómina"},
+            {"name": "Autorización de Viaje Internacional"},
         ]
 
     def _get_endpoint(self, slug: str):
