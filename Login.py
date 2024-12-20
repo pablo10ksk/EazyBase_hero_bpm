@@ -47,7 +47,13 @@ class Login:
         api_login = self._login_request(api_login_url, self._user, self._password)
         # FIXME: recuperar original
         # agent_login = self._login_request(agent_login_url, self._user, self._password)
-        agent_login = self._login_request(agent_login_url, os.getenv("AGENT_USER"), os.getenv("AGENT_PWD"))
+        agent_user = os.getenv("AGENT_USER")
+        assert agent_user is not None, "AGENT_USER is not set"
+
+        agent_pwd = os.getenv("AGENT_PWD")
+        assert agent_pwd is not None, "AGENT_PWD is not set"
+
+        agent_login = self._login_request(agent_login_url, agent_user, agent_pwd)
 
         if api_login is None or agent_login is None:
             print(
