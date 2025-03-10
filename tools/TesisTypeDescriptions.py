@@ -37,6 +37,9 @@ class TesisTypeDescriptionsTool(SimpleXyzTool):
         elif "nticipo" in self.input.type_name:
             num = 120
             tipo = "Anticipo de nómina"
+        elif "astos" in self.input.type_name:
+            num = 331
+            tipo = "Nota de Gastos"
         else:
             num = 122
             tipo = "Autorización de Viaje Internacional"

@@ -211,6 +211,7 @@ class Api:
             {"name": "Vacaciones"},
             {"name": "Anticipo de nómina"},
             {"name": "Autorización de Viaje Internacional"},
+            {"name": "Nota de Gastos"},
         ]
 
     def _get_endpoint(self, slug: str):
