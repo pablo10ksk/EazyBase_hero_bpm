@@ -180,8 +180,21 @@ class Api:
             headers=self.headers,
         )
         return res.json()
+    
+    def hero_insert_object(self, className: str, mapData: dict, methodInsert: str):
+        res = requests.get(
+            url=self._get_endpoint_base("HeroInsertObject"),
+            json={
+                "token": self._get_token(),
+                "className": className,
+                "mapData": mapData,
+                "methodInsert": methodInsert,
+            },
+            headers=self.headers,
+        )
+        return res.json()
 
-    def insert_magic(self, tipo_num: int, args: dict):
+    def insert_magic(self, tipo_num: str, args: dict):
         descri = args
         descri["TITULO_DS"] = "Test"
 
@@ -218,6 +231,11 @@ class Api:
         endpoint = os.getenv("API_ENDPOINT")
         assert endpoint is not None, "API_ENDPOINT is not set"
         return urljoin(endpoint + "ibpmev2/", slug)
+    
+    def _get_endpoint_base(self, slug: str):
+        endpoint = os.getenv("API_ENDPOINT")
+        assert endpoint is not None, "API_ENDPOINT is not set"
+        return urljoin(endpoint + "/", slug)
 
     def _get_endpoint_simple(self, slug: str):
         endpoint = os.getenv("API_ENDPOINT")

@@ -44,6 +44,7 @@ class TesisTypeDescriptionsTool(SimpleXyzTool):
             num = 122
             tipo = "Autorización de Viaje Internacional"
         res = st.session_state.api.do_keen_magic(num)
+        print(res)
         res["tipo"] = tipo
         return res
 

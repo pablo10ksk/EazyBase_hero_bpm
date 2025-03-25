@@ -68,7 +68,10 @@ class XyzTool(ABC):
     def set_input(self, obj: Any) -> None:
         try:
             if self.schema:
-                self.input = self.schema(**obj)
+                if 'prompt' in obj:
+                    self.input = self.schema(**(obj["prompt"]))
+                else: 
+                    self.input = self.schema(**obj)
         except Exception as e:
             st.error(f"Error: {e}")
             st.error(f"Could not set input for tool {self.name}.")

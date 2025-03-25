@@ -80,6 +80,11 @@ class TesisTypeExecutionTool(SimpleXyzTool):
         else:
             # res = "Se ha insertado el contenido. Ref: '1333127', Cod Externo: ''"
             # return res
-            ref_num = re.search(r"(\d+)", res).group(1)
-            text = f"Se ha creado un contenido de **{nombre}** en ClearNet con número de referencia **{ref_num}**. Puede consultarlo en la plataforma."
-            return text
+            match = re.search(r"(\d+)", res)
+            if match:
+                ref_num = match.group(1)
+                text = f"Se ha creado un contenido de **{nombre}** en ClearNet con número de referencia **{ref_num}**. Puede consultarlo en la plataforma."
+                return text
+            else:
+                return "Error"
+           

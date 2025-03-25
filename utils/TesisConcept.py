@@ -19,6 +19,7 @@ class TesisConcept:
 
                 options = [clean_option(opt) for opt in options]
                 options = [f"'{opt}'" for opt in options]
+                options = list(set (options))
                 options_united = Utils.join_spanish(options)
                 res += f", con posibles valores: {options_united}."
             else:
@@ -48,6 +49,7 @@ class TesisConcept:
             "115": "Vacaciones",
             "120": "Anticipo de nómina",
             "122": "Autorización de Viaje Internacional",
+            "331": "Nota de Gastos",
         }[type_cd]
 
     @staticmethod
@@ -56,4 +58,5 @@ class TesisConcept:
             "115": "SOLIC_VACACIONES",
             "120": "ANTICIPO_NOMINA",
             "122": "AUTORIZACION_VIAJE",
+            "331": "EXPENSE_REPORT",
         }[tipo_num]

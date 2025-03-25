@@ -46,7 +46,7 @@ def answer() -> None:
             assistant_message.render()
             st.session_state.client.historial.add_message(assistant_message)
 
-
+ 
 def get_answer() -> Message:
     """
     Retrieves an answer from the chatbot based on the user's input.

@@ -6,6 +6,7 @@ from tools.QueryPendingTasks import GraphPendingTasksTool
 from tools.TesisAvailableTypes import TesisAvailableTypesTool
 from tools.TesisTypeDescriptions import TesisTypeDescriptionsTool
 from tools.TesisTypeExecution import TesisTypeExecutionTool
+from tools.ProviderRegistrationTool import ProviderRegistrationTool
 from tools.XyzTool import XyzTool
 
 """
@@ -21,6 +22,8 @@ all_tools: list[XyzTool] = [
     TesisAvailableTypesTool(),
     TesisTypeDescriptionsTool(),
     TesisTypeExecutionTool(),
+    # Proveedores
+    ProviderRegistrationTool()
 ]
 
 # We add the Summary tool at the end
