@@ -31,7 +31,7 @@ class ProviderRegistrationTool(XyzTool):
             "TIPO_PROVEEDOR_ID": self.input.TIPO_PROVEEDOR_ID,
             "PAIS_CD": self.input.PAIS_CD,
             "CIF_CD": self.input.CIF_CD,
-        }, "Insert")
+        }, "OnInsert")
 
     def text(self, data: dict) -> str:
         if 'code' in data:

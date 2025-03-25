@@ -40,6 +40,7 @@ class TesisTypeExecutionTool(SimpleXyzTool):
         else:
             estructura = TesisConcept.get_mapping(fields["data"])
             print(estructura)
+            titulo = "TITULO_DS = 'Test'" if 'TITULO_DS' not in self.input.args else "TITULO_DS = '" + self.input.args['TITULO_DS'] + "'."
             # Quiero dar de alta un anticipo de nómina de 800 euros en a coruña en el departamento general
             new_prompt = f"""
             El usuario ha mandado este formulario de esta manera
@@ -49,6 +50,7 @@ class TesisTypeExecutionTool(SimpleXyzTool):
 
             Sin embargo la estructura que me hace falta es 
             -----
+            {titulo}
             {estructura}
             """
             corrected_args = st.session_state.agent._run_router(

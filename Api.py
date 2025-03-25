@@ -196,8 +196,7 @@ class Api:
 
     def insert_magic(self, tipo_num: str, args: dict):
         descri = args
-        descri["TITULO_DS"] = "Test"
-
+        descri['TITULO_DS'] = 'Test' if 'TITULO_DS' not in args else args['TITULO_DS']
         res = requests.get(
             url=self._get_endpoint("doKeenMagic"),
             json={
@@ -205,14 +204,8 @@ class Api:
                 "mapData": {
                     "ACTION": "insertcatalog",
                     "TIPO_CD": tipo_num,
-                    "TAG_CD": TesisConcept.get_tag(tipo_num),  # "SOLIC_VACACIONES",
+                    "TAG_CD": TesisConcept.get_tag(tipo_num), 
                     "DESCRI": descri,
-                    # {
-                    #     # "INICIO_DT": "20241215000000",
-                    #     # "FIN_DT": "20241216000000",
-                    #     # "MOTIVO_CD": "Vacaciones",
-                    #     "TITULO_DS": "Test",
-                    # },
                 },
             },
             headers=self.headers,
