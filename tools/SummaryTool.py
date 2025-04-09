@@ -1,7 +1,7 @@
 from Chatbot import chatbot
 from tools.ExampleQuestion import ExampleQuestion
 from tools.SimpleXyzTool import SimpleXyzTool
-from tools.tools import all_tools
+from tools.tools import public_tools
 
 
 class SummaryTool(SimpleXyzTool):
@@ -21,7 +21,7 @@ class SummaryTool(SimpleXyzTool):
         )
 
     def run(self, prompt: str) -> dict:
-        return {"tools": all_tools}
+        return {"tools": public_tools}
 
     def text(self, data: dict) -> str:
         name = chatbot.fancy_name
@@ -32,7 +32,7 @@ class SummaryTool(SimpleXyzTool):
 
     def _get_tools_description(self) -> str:
         res = ""
-        for idx, tool in enumerate(all_tools):
+        for idx, tool in enumerate(public_tools):
             name = tool.human_name
             description = tool.human_description
             res += f"{idx+1}. **{name}**: {description}\n"

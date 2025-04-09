@@ -19,7 +19,7 @@ class Agent:
     def route_prompt(
         self,
         prompt: str,
-        all_tools: list[XyzTool],
+        tools: list[XyzTool],
         historial: list[dict],
     ) -> Tuple[Optional[XyzTool], dict | str]:
         res = self._run_router(self.MAIN_ROUTER, prompt, historial)
@@ -30,7 +30,7 @@ class Agent:
         elif isinstance(response, dict):
             tool_name = response.get("tool")
             tool = None
-            for t in all_tools:
+            for t in tools:
                 if t.name == tool_name:
                     tool = t
                     break

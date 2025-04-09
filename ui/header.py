@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
 
 from Chatbot import chatbot
-from tools.tools import all_tools
+from tools.tools import public_tools
 
 
 def header():
@@ -21,7 +21,7 @@ def header():
         idx = 0
 
         cols: list[DeltaGenerator] = []
-        for tool in all_tools:
+        for tool in public_tools:
             for question in tool.example_questions:
                 st.session_state.example_questions.append(
                     {

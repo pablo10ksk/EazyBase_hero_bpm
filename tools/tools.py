@@ -7,27 +7,36 @@ from tools.TesisAvailableTypes import TesisAvailableTypesTool
 from tools.TesisTypeDescriptions import TesisTypeDescriptionsTool
 from tools.TesisTypeExecution import TesisTypeExecutionTool
 from tools.ProviderRegistrationTool import ProviderRegistrationTool
+from tools.TesisExecuteTool import TesisExecutionTool
+from tools.ResponseTool import ResponseTool
 from tools.XyzTool import XyzTool
 
 """
 A list of all the tools available in the chatbot.
 """
-all_tools: list[XyzTool] = [
+public_tools: list[XyzTool] = [
     NEWPendingTasksTool(),
     GraphPendingTasksTool(),
     PendingTaskTool(),
     MakeTaskDecisionTool(),
     PhasedPendingTasksTool(),
     # TESIS:
-    TesisAvailableTypesTool(),
-    TesisTypeDescriptionsTool(),
-    TesisTypeExecutionTool(),
+    # TesisAvailableTypesTool(),
+    # TesisTypeDescriptionsTool(),
+    # TesisTypeExecutionTool(),
+    TesisExecutionTool(),
     # Proveedores
     ProviderRegistrationTool()
+]
+
+private_tools : list[XyzTool] = [
+   ResponseTool(),
 ]
 
 # We add the Summary tool at the end
 # to avoid circular dependencies
 from tools.SummaryTool import SummaryTool
 
-all_tools.append(SummaryTool())
+public_tools.append(SummaryTool())
+
+all_tools = public_tools + private_tools

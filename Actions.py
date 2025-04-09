@@ -2,7 +2,8 @@ import streamlit as st
 
 from LlmProxy import LlmProxy
 from Message import Message
-
+from tools.XyzTool import XyzTool
+from typing import Any
 
 def ask_shallow_question(shallow_prompt: str, prompt: str) -> None:
     """
@@ -20,6 +21,14 @@ def ask_shallow_question(shallow_prompt: str, prompt: str) -> None:
 
     answer()
 
+def execute_tool_programmatically(tool: XyzTool, input: Any) -> None:
+    client: LlmProxy = st.session_state.client
+    with st.session_state.ui_questions:
+        with st.chat_message("assistant"):
+            with st.spinner("Ejecutando..."):
+                assistant_message = client.run_tool(tool, input)
+                assistant_message.render()
+                st.session_state.client.historial.add_message(assistant_message)
 
 def ask_question(prompt: str) -> None:
     """
@@ -61,7 +70,12 @@ def get_answer() -> Message:
                 text="Debes iniciar sesión antes de usar este chatbot.",
                 role="assistant",
             )
-
+        
+    #Poner en disebled los botones de confirmación
+    for button_key in st.session_state.buttons_confirm:
+        print("button_key: ", button_key, "value:", st.session_state.buttons_confirm[button_key])
+        st.session_state.buttons_confirm[button_key] = True
+    
     with st.spinner("Estudiando lo que me has pedido..."):
         tool, input = client.route_prompt()
 

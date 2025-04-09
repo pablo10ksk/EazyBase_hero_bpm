@@ -1,9 +1,7 @@
 from dataclasses import dataclass
-from json import loads
-from typing import Optional, Tuple
+from typing import Optional, Any
 from uuid import uuid4
 
-import requests
 import streamlit as st
 from openai import OpenAI
 
@@ -12,7 +10,7 @@ from EazyBase import EazyBase
 from Historial import Historial
 from Login import Login
 from Message import Message
-from tools.tools import all_tools
+from tools.tools import public_tools
 from tools.XyzTool import XyzTool
 
 
@@ -37,11 +35,11 @@ class LlmProxy:
         agent: Agent = st.session_state.agent
         return agent.route_prompt(
             prompt,
-            all_tools,
+            public_tools,
             self.historial.get_last_messages_except_last(),
         )
 
-    def run_tool(self, tool: Optional[XyzTool], input: dict | str):
+    def run_tool(self, tool: Optional[XyzTool], input: Any):
         new_id = str(uuid4())
         last_message = self.historial.get_last_message()
         assert last_message is not None, "No messages in the historial"
