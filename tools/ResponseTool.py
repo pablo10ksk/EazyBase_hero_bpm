@@ -4,12 +4,12 @@ from typing import Optional
 import streamlit as st
 from json import dumps, loads
 
-class ProviderRegistrationInput(BaseModel):
+class ResponseInput(BaseModel):
     message : Optional[str] = None
     code: Optional[str] = None 
 
 class ResponseTool(XyzTool):
-    input: ProviderRegistrationInput
+    input: ResponseInput
 
     def __init__(self):
         super().__init__(
@@ -17,7 +17,7 @@ class ResponseTool(XyzTool):
             description="Herramienta para dar respuesta a peticiones de Tesis/ClearNet",
             human_name="Respuesta Tesis/ClearNet",
             human_description="Herramienta para dar respuesta a peticiones de Tesis/ClearNet",
-            schema=ProviderRegistrationInput,
+            schema=ResponseInput,
         )
 
     def run(self, prompt: str) -> dict:

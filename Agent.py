@@ -66,7 +66,7 @@ class Agent:
         )
 
         res = raw_response.json()
-        print(f"Router {router_code}: {res}")
+        print(f"Router {router_code}: ", res)
         return res
 
     def _get_endpoint(self):

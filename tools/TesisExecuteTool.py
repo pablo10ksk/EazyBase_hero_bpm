@@ -15,6 +15,7 @@ class TesisExecutionInput(BaseModel):
     type_cd: Optional[str] = None
     args: Optional[dict] = None
     message_error: Optional[str] = None
+    help: Optional[str] = None
 
 class TesisExecutionTool(XyzTool):
     input: TesisExecutionInput
@@ -54,6 +55,8 @@ class TesisExecutionTool(XyzTool):
                 args=(str_args, button_key),
                 disabled=disabled,
             )
+            if self.input.help is not None:
+                st.markdown(self.input.help)
         else:
             st.error(text)
 
@@ -69,7 +72,6 @@ class TesisExecutionTool(XyzTool):
 
         # Procesar resultado
         match = re.search(r"(\d+)", result)
-        print(match)
         if match:
             ref_num = match.group(1)
             # Actualizar la respuesta con el template de salida
@@ -78,5 +80,6 @@ class TesisExecutionTool(XyzTool):
             execute_tool_programmatically(ResponseTool(), {"type": "ok", "message": text})
             st.session_state.buttons_confirm[button_key] = True
         else:
-            assert self.input.message_error is not None
-            execute_tool_programmatically(ResponseTool(), {"type": "error", "message": self.input.message_error})
+            #assert self.input.message_error is not None
+            message_error = "Error en ClearNet. {result}" if self.input.message_error is None else self.input.message_error
+            execute_tool_programmatically(ResponseTool(), {"type": "error", "message": message_error})

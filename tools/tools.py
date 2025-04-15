@@ -8,6 +8,7 @@ from tools.TesisTypeDescriptions import TesisTypeDescriptionsTool
 from tools.TesisTypeExecution import TesisTypeExecutionTool
 from tools.ProviderRegistrationTool import ProviderRegistrationTool
 from tools.TesisExecuteTool import TesisExecutionTool
+from tools.InformationTool import InformationTool
 from tools.ResponseTool import ResponseTool
 from tools.XyzTool import XyzTool
 
@@ -25,6 +26,7 @@ public_tools: list[XyzTool] = [
     # TesisTypeDescriptionsTool(),
     # TesisTypeExecutionTool(),
     TesisExecutionTool(),
+    InformationTool(),
     # Proveedores
     ProviderRegistrationTool()
 ]

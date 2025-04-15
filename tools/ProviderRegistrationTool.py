@@ -16,6 +16,8 @@ class ProviderRegistrationInput(BaseModel):
     TELEFONO_CD: str | None = None
     PERSONA_CONTACTO_DS: str | None = None
     DIRECCION_EMAIL_CD: str | None = None
+    message_error: Optional[str] = None
+    help: Optional[str] = None
 
 class ProviderRegistrationTool(XyzTool):
     input: ProviderRegistrationInput
@@ -64,6 +66,8 @@ class ProviderRegistrationTool(XyzTool):
                 args=(provider, button_key),
                 disabled=disabled,
             )
+            if self.input.help is not None:
+                st.markdown(self.input.help)
         else:
             st.error(text)
 
